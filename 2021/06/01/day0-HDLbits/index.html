@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"t1ina2003.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="record of solving HDLbits problem.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="day0-HDLbits">
+<meta property="og:url" content="http://t1ina2003.github.io/2021/06/01/day0-HDLbits/index.html">
+<meta property="og:site_name" content="zswang&#39;s blog">
+<meta property="og:description" content="record of solving HDLbits problem.">
+<meta property="og:locale" content="zh_TW">
+<meta property="article:published_time" content="2021-06-01T02:45:05.000Z">
+<meta property="article:modified_time" content="2021-12-02T16:36:42.310Z">
+<meta property="article:author" content="zswang">
+<meta property="article:tag" content="verilog">
+<meta property="article:tag" content="hdlbits">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://t1ina2003.github.io/2021/06/01/day0-HDLbits/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>day0-HDLbits | zswang's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zswang's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://t1ina2003.github.io/2021/06/01/day0-HDLbits/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zswang">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zswang's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          day0-HDLbits
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2021-06-01 10:45:05" itemprop="dateCreated datePublished" datetime="2021-06-01T10:45:05+08:00">2021-06-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-03 00:36:42" itemprop="dateModified" datetime="2021-12-03T00:36:42+08:00">2021-12-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/verilog/" itemprop="url" rel="index"><span itemprop="name">verilog</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>record of solving HDLbits problem.</p>
+<a id="more"></a>
+
+<h1 id="Vector1"><a href="#Vector1" class="headerlink" title="Vector1"></a>Vector1</h1><figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="built_in">$display</span>(<span class="string">&quot;This is a test number: %b.&quot;</span>, num); <span class="comment">// 印出結果 </span></span><br><span class="line"><span class="built_in">$write</span>(<span class="string">&quot;This is a test&quot;</span>);</span><br><span class="line"><span class="built_in">$write</span>(<span class="string">&quot;number: %b&quot;</span>, num); <span class="comment">// 不會換行</span></span><br><span class="line"><span class="built_in">$strobe</span>(<span class="string">&quot;$strobe excuting result: %d.&quot;</span>, a); <span class="comment">// 在其他語句結束完成後，才執行顯示任務</span></span><br><span class="line"><span class="built_in">$monitor</span>(<span class="string">&quot;Counter change to value %d at the time %t.&quot;</span>, cnt, <span class="built_in">$time</span>); <span class="comment">// 只要其中變數有更動就會列印出來</span></span><br></pre></td></tr></table></figure>
+<h2 id="Unpacked-vs-Packed-Arrays"><a href="#Unpacked-vs-Packed-Arrays" class="headerlink" title="Unpacked vs. Packed Arrays"></a>Unpacked vs. Packed Arrays</h2><p>reg [7:0] mem [255:0];   // 256 unpacked elements, each of which is a 8-bit packed vector of reg.<br>reg mem2 [28:0];         // 29 unpacked elements, each of which is a 1-bit reg.</p>
+<h1 id="Gatesv100"><a href="#Gatesv100" class="headerlink" title="Gatesv100"></a>Gatesv100</h1><p><a target="_blank" rel="noopener" href="https://hdlbits.01xz.net/wiki/Gatesv">短版</a>  #bit操作<br>given a 100-bit input vector in[99:0],  </p>
+<ul>
+<li>out_both: out_both[98] = in[98] &amp; in[99]</li>
+<li>out_any: out_any[2] = in[1] | in[0]</li>
+<li>out_different: out_different[98] = in[98] ^ in[99], but wrapping around.<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module( </span><br><span class="line">    <span class="keyword">input</span> [<span class="number">99</span>:<span class="number">0</span>] in,</span><br><span class="line">    <span class="keyword">output</span> [<span class="number">98</span>:<span class="number">0</span>] out_both,</span><br><span class="line">    <span class="keyword">output</span> [<span class="number">99</span>:<span class="number">1</span>] out_any,</span><br><span class="line">    <span class="keyword">output</span> [<span class="number">99</span>:<span class="number">0</span>] out_different );</span><br><span class="line">    <span class="keyword">assign</span> out_both = in[<span class="number">98</span>:<span class="number">0</span>] &amp; in[<span class="number">99</span>:<span class="number">1</span>];</span><br><span class="line">    <span class="keyword">assign</span> out_any = in[<span class="number">99</span>:<span class="number">1</span>] | in[<span class="number">98</span>:<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">assign</span> out_different = in[<span class="number">99</span>:<span class="number">0</span>] ^ &#123;in[<span class="number">0</span>],in[<span class="number">99</span>:<span class="number">1</span>]&#125;;</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+<h1 id="Mux9to1v"><a href="#Mux9to1v" class="headerlink" title="Mux9to1v"></a>Mux9to1v</h1>case 要寫在 always 裡面 </li>
+</ul>
+<h1 id="Mux256to1"><a href="#Mux256to1" class="headerlink" title="Mux256to1"></a>Mux256to1</h1><p>變動index居然可行</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module( </span><br><span class="line">    <span class="keyword">input</span> [<span class="number">255</span>:<span class="number">0</span>] in,</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">7</span>:<span class="number">0</span>] sel,</span><br><span class="line">    <span class="keyword">output</span> out );</span><br><span class="line">    <span class="keyword">assign</span> out = in[sel];</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Mux256to1v"><a href="#Mux256to1v" class="headerlink" title="Mux256to1v"></a>Mux256to1v</h1><p>謝謝你Verilog-2001, <code>6.4 Vector Bit Selects and Part Selects</code></p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module( </span><br><span class="line">    <span class="keyword">input</span> [<span class="number">1023</span>:<span class="number">0</span>] in,</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">7</span>:<span class="number">0</span>] sel,</span><br><span class="line">    <span class="keyword">output</span> [<span class="number">3</span>:<span class="number">0</span>] out );</span><br><span class="line">    <span class="keyword">assign</span> out = in[sel*<span class="number">4</span> +: <span class="number">4</span>];</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+<h1 id="Exams-m2014-q4j"><a href="#Exams-m2014-q4j" class="headerlink" title="Exams/m2014 q4j"></a>Exams/m2014 q4j</h1><p>果然有詐, 寫太多加法器思維被困住.<br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/60262770">如果使用位连接符 {x+y},那么结果就会被限制为 4 bit 数。</a></p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module (</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">3</span>:<span class="number">0</span>] x,</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">3</span>:<span class="number">0</span>] y, </span><br><span class="line">    <span class="keyword">output</span> [<span class="number">4</span>:<span class="number">0</span>] sum);</span><br><span class="line">	<span class="keyword">assign</span> sum = x + y ;</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+<h1 id="Exams-ece241-2014-q1c"><a href="#Exams-ece241-2014-q1c" class="headerlink" title="Exams/ece241 2014 q1c"></a>Exams/ece241 2014 q1c</h1><p>很酷的溢為位, 負數最高bit為0<br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/60262770">一是正正相加，产生正溢出;另一种情况是负负相减，产生负溢出。</a></p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module (</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">7</span>:<span class="number">0</span>] a,</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">7</span>:<span class="number">0</span>] b,</span><br><span class="line">    <span class="keyword">output</span> [<span class="number">7</span>:<span class="number">0</span>] s,</span><br><span class="line">    <span class="keyword">output</span> overflow</span><br><span class="line">);</span><br><span class="line">    <span class="keyword">assign</span> s = a + b;</span><br><span class="line">    <span class="comment">// 正數2補數MSB為1, 若正數+正數且s[7]不為0, 正溢出. 反之</span></span><br><span class="line">    <span class="keyword">assign</span> overflow = (~a[<span class="number">7</span>] &amp; ~b[<span class="number">7</span>] &amp; s[<span class="number">7</span>]) | (a[<span class="number">7</span>] &amp; b[<span class="number">7</span>] &amp; ~s[<span class="number">7</span>]); <span class="comment">// 正數 | 負數</span></span><br><span class="line"><span class="keyword">endmodule</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">assign</span> out = ~a&amp;b&amp;~c&amp;~d</span><br></pre></td></tr></table></figure>
+<h1 id="Kmap4"><a href="#Kmap4" class="headerlink" title="Kmap4"></a>Kmap4</h1><p>很過分的一題, 用卡諾圖反而難解.</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module(</span><br><span class="line">    <span class="keyword">input</span> a,</span><br><span class="line">    <span class="keyword">input</span> b,</span><br><span class="line">    <span class="keyword">input</span> c,</span><br><span class="line">    <span class="keyword">input</span> d,</span><br><span class="line">    <span class="keyword">output</span> out  ); </span><br><span class="line"><span class="keyword">function</span> result;</span><br><span class="line">	<span class="keyword">input</span> [<span class="number">3</span>:<span class="number">0</span>] abcd;</span><br><span class="line">	<span class="keyword">begin</span></span><br><span class="line">    	<span class="keyword">case</span>(abcd)</span><br><span class="line">    		<span class="number">4&#x27;b0100</span>: result = <span class="number">1</span>;</span><br><span class="line">    		<span class="number">4&#x27;b0001</span>: result = <span class="number">1</span>;</span><br><span class="line">    		<span class="number">4&#x27;b1000</span>: result = <span class="number">1</span>;</span><br><span class="line">    		<span class="number">4&#x27;b1101</span>: result = <span class="number">1</span>;</span><br><span class="line">    		<span class="number">4&#x27;b0111</span>: result = <span class="number">1</span>;</span><br><span class="line">    		<span class="number">4&#x27;b0010</span>: result = <span class="number">1</span>;</span><br><span class="line">    		<span class="number">4&#x27;b1011</span>: result = <span class="number">1</span>;</span><br><span class="line">    		<span class="number">4&#x27;b1110</span>: result = <span class="number">1</span>;</span><br><span class="line">    		<span class="keyword">default</span>: result = <span class="number">0</span>;</span><br><span class="line">    	<span class="keyword">endcase</span></span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="keyword">endfunction</span></span><br><span class="line">    <span class="keyword">assign</span> out = result(&#123;a,b,c,d&#125;);</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+<h1 id="Exams-ece241-2014-q3"><a href="#Exams-ece241-2014-q3" class="headerlink" title="Exams/ece241 2014 q3"></a>Exams/ece241 2014 q3</h1><p>題目有點令人費解, 簡單來說, top_module 只與 cd有關<br>而mux_in[0]則是00時c與d的sop, 也就是卡諾圖的第一直排.</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module (</span><br><span class="line">    <span class="keyword">input</span> c,</span><br><span class="line">    <span class="keyword">input</span> d,</span><br><span class="line">    <span class="keyword">output</span> [<span class="number">3</span>:<span class="number">0</span>] mux_in</span><br><span class="line">); </span><br><span class="line">    <span class="keyword">assign</span> mux_in[<span class="number">0</span>] = c | d;</span><br><span class="line">    <span class="keyword">assign</span> mux_in[<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">assign</span> mux_in[<span class="number">2</span>] = ~d;</span><br><span class="line">    <span class="keyword">assign</span> mux_in[<span class="number">3</span>] = c &amp; d;</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+<h1 id="Dff8p"><a href="#Dff8p" class="headerlink" title="Dff8p"></a>Dff8p</h1><p>16進位簡寫是可以的</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">always</span> @(<span class="keyword">negedge</span> clk) q &lt;= reset ? <span class="number">&#x27;h34</span> : d;</span><br></pre></td></tr></table></figure>
+<h1 id="Exams-2014-q4a"><a href="#Exams-2014-q4a" class="headerlink" title="Exams/2014 q4a"></a>Exams/2014 q4a</h1><p>巢狀結構if簡寫是可以的 </p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clk) Q &lt;= L ? R : (E ? w : Q); </span><br></pre></td></tr></table></figure>
+
+<h1 id="Edgecapture"><a href="#Edgecapture" class="headerlink" title="Edgecapture"></a>Edgecapture</h1><p>犯蠢了, 不小心在always裡面重新定義了輸出</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>  out_tmp &lt;= <span class="number">0</span>;</span><br><span class="line">out_tmp &lt;= ~in &amp; in_dly | out_tmp;</span><br></pre></td></tr></table></figure>
+<p>應該要這樣寫</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line">out_tmp &lt;= (reset) ? <span class="number">0</span> : ~in &amp; in_dly | out_tmp;</span><br></pre></td></tr></table></figure>
+<h1 id="Dualedge"><a href="#Dualedge" class="headerlink" title="Dualedge"></a>Dualedge</h1><p>在 posedge 對上一個時間 negedge 跟 d xor 立 開始 flag (不論1或0),<br>在 negedge 對上一個時間 posedge 跟 d xor 立 結束 flag (不論1或0),<br>q 就是 開始flag 跟結束 flag 的 xor</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module (</span><br><span class="line">    <span class="keyword">input</span> clk,</span><br><span class="line">    <span class="keyword">input</span> d,</span><br><span class="line">    <span class="keyword">output</span> q</span><br><span class="line">);</span><br><span class="line">	<span class="keyword">reg</span> q_d1;</span><br><span class="line">    <span class="keyword">reg</span> q_d2;</span><br><span class="line">    <span class="keyword">always</span> @(<span class="keyword">posedge</span> clk) q_d1 &lt;= d ^ q_d2;</span><br><span class="line">    <span class="keyword">always</span> @(<span class="keyword">negedge</span> clk) q_d2 &lt;= d ^ q_d1;</span><br><span class="line">    <span class="keyword">assign</span> q = q_d1 ^ q_d2;</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+<h1 id="Lfsr32"><a href="#Lfsr32" class="headerlink" title="Lfsr32"></a>Lfsr32</h1><p>部分映射, 部分xor</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module(</span><br><span class="line">    <span class="keyword">input</span> clk,</span><br><span class="line">    <span class="keyword">input</span> reset,    <span class="comment">// Active-high synchronous reset to 32&#x27;h1</span></span><br><span class="line">    <span class="keyword">output</span> [<span class="number">31</span>:<span class="number">0</span>] q</span><br><span class="line">); </span><br><span class="line">    <span class="keyword">always</span> @(<span class="keyword">posedge</span> clk) <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span> (reset) q &lt;= <span class="number">32&#x27;h1</span>;</span><br><span class="line">        <span class="keyword">else</span> q &lt;= &#123;q[<span class="number">0</span>]^<span class="number">0</span>, q[<span class="number">31</span>:<span class="number">23</span>],q[<span class="number">22</span>]^q[<span class="number">0</span>],q[<span class="number">21</span>:<span class="number">3</span>], q[<span class="number">2</span>]^q[<span class="number">0</span>], q[<span class="number">1</span>]^q[<span class="number">0</span>]&#125;;</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+<h1 id="Exams-ece241-2013-q12"><a href="#Exams-ece241-2013-q12" class="headerlink" title="Exams/ece241 2013 q12"></a>Exams/ece241 2013 q12</h1><p>直接concatenate居然可以當index!</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module (</span><br><span class="line">    <span class="keyword">input</span> clk,</span><br><span class="line">    <span class="keyword">input</span> enable,</span><br><span class="line">    <span class="keyword">input</span> S,</span><br><span class="line">    <span class="keyword">input</span> A, B, C,</span><br><span class="line">    <span class="keyword">output</span> Z ); </span><br><span class="line">    <span class="keyword">reg</span> [<span class="number">0</span>:<span class="number">7</span>] Q;</span><br><span class="line">    <span class="keyword">always</span>@(<span class="keyword">posedge</span> clk) <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span>(enable) Q &lt;= &#123;S, Q[<span class="number">0</span>:<span class="number">6</span>]&#125;;</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">assign</span> Z = Q[&#123;A,B,C&#125;];</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+<h1 id="Fsm3onehot"><a href="#Fsm3onehot" class="headerlink" title="Fsm3onehot"></a>Fsm3onehot</h1><p>居然oneHot是可以平坦化解釋的transition.<br>支援多條件判斷.</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module(</span><br><span class="line">    <span class="keyword">input</span> in,</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">3</span>:<span class="number">0</span>] state,</span><br><span class="line">    <span class="keyword">output</span> [<span class="number">3</span>:<span class="number">0</span>] next_state,</span><br><span class="line">    <span class="keyword">output</span> out); <span class="comment">//</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">parameter</span> A=<span class="number">0</span>, B=<span class="number">1</span>, C=<span class="number">2</span>, D=<span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// State transition logic: Derive an equation for each state flip-flop.</span></span><br><span class="line">    <span class="keyword">assign</span> next_state[A] = state[<span class="number">0</span>]&amp;(~in) | state[<span class="number">2</span>]&amp;(~in);</span><br><span class="line">    <span class="keyword">assign</span> next_state[B] = state[<span class="number">0</span>]&amp;(in) | state[<span class="number">1</span>]&amp;(in) | state[<span class="number">3</span>]&amp;(in);</span><br><span class="line">    <span class="keyword">assign</span> next_state[C] = state[<span class="number">1</span>]&amp;(~in) | state[<span class="number">3</span>]&amp;(~in);</span><br><span class="line">    <span class="keyword">assign</span> next_state[D] = state[<span class="number">2</span>]&amp;(in);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Output logic: </span></span><br><span class="line">    <span class="keyword">assign</span> out = state[<span class="number">3</span>]==<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+<h1 id="Exams-ece241-2013-q4"><a href="#Exams-ece241-2013-q4" class="headerlink" title="Exams/ece241 2013 q4"></a>Exams/ece241 2013 q4</h1><p>思路, 照表格輸出fr1~fr3,<br>dfr特例輸出, 有兩個特性<br>一是要在clk判斷, 做輸出變化<br>再來，是要跟舊的state做判斷<br>因此獨立出來</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module (</span><br><span class="line">    <span class="keyword">input</span> clk,</span><br><span class="line">    <span class="keyword">input</span> reset,</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">3</span>:<span class="number">1</span>] s,</span><br><span class="line">    <span class="keyword">output</span> fr3,</span><br><span class="line">    <span class="keyword">output</span> fr2,</span><br><span class="line">    <span class="keyword">output</span> fr1,</span><br><span class="line">    <span class="keyword">output</span> dfr</span><br><span class="line">); </span><br><span class="line">    <span class="keyword">reg</span> [<span class="number">3</span>:<span class="number">1</span>] s_prev;</span><br><span class="line">    <span class="keyword">reg</span> dfr_temp;</span><br><span class="line">    <span class="keyword">always</span> @(<span class="keyword">posedge</span> clk) <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span> (reset) <span class="keyword">begin</span> </span><br><span class="line">            s_prev = <span class="number">3&#x27;b000</span>;</span><br><span class="line">            dfr_temp = <span class="number">1</span>;</span><br><span class="line">            &#123;fr3,fr2,fr1,dfr&#125; = <span class="number">4&#x27;b1111</span>;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">begin</span> </span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 用block寫法, 不然會多一個clock</span></span><br><span class="line">            <span class="keyword">if</span> ( s != s_prev ) <span class="keyword">begin</span> </span><br><span class="line">                dfr_temp = s &lt; s_prev;</span><br><span class="line">                s_prev = s;</span><br><span class="line">            <span class="keyword">end</span></span><br><span class="line">            <span class="keyword">else</span> dfr_temp = dfr_temp;</span><br><span class="line">            <span class="keyword">case</span> (s) <span class="comment">// 判斷完的直接送出 </span></span><br><span class="line">				<span class="number">3&#x27;b000</span>: &#123;fr3,fr2,fr1,dfr&#125; = &#123;<span class="number">3&#x27;b111</span>,dfr_temp&#125;;</span><br><span class="line">				<span class="number">3&#x27;b001</span>: &#123;fr3,fr2,fr1,dfr&#125; = &#123;<span class="number">3&#x27;b011</span>,dfr_temp&#125;;</span><br><span class="line">            	<span class="number">3&#x27;b011</span>: &#123;fr3,fr2,fr1,dfr&#125; = &#123;<span class="number">3&#x27;b001</span>,dfr_temp&#125;;</span><br><span class="line">            	<span class="number">3&#x27;b111</span>: &#123;fr3,fr2,fr1,dfr&#125; = &#123;<span class="number">3&#x27;b000</span>,dfr_temp&#125;;</span><br><span class="line">        	<span class="keyword">endcase</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+<h1 id="Lemmings2"><a href="#Lemmings2" class="headerlink" title="Lemmings2"></a>Lemmings2</h1><p>多兩個state, FALL_L, FALL_R<br>比較簡潔, 比起多一個reg來的方便快速.<br>用state描述狀態, 減少判斷.</p>
+<h1 id="Lemmings4"><a href="#Lemmings4" class="headerlink" title="Lemmings4"></a>Lemmings4</h1><p>小時候很喜歡的旅鼠遊戲最終章<br>對於死亡的判定(20 or 21 clk)弄了蠻久的.<br>依舊是個很漂亮的FSM</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module(</span><br><span class="line">    <span class="keyword">input</span> clk,</span><br><span class="line">    <span class="keyword">input</span> areset,    <span class="comment">// Freshly brainwashed Lemmings walk left.</span></span><br><span class="line">    <span class="keyword">input</span> bump_left,</span><br><span class="line">    <span class="keyword">input</span> bump_right,</span><br><span class="line">    <span class="keyword">input</span> ground,</span><br><span class="line">    <span class="keyword">input</span> dig,</span><br><span class="line">    <span class="keyword">output</span> walk_left,</span><br><span class="line">    <span class="keyword">output</span> walk_right,</span><br><span class="line">    <span class="keyword">output</span> aaah,</span><br><span class="line">    <span class="keyword">output</span> digging ); </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">parameter</span> LEFT=<span class="number">3&#x27;d0</span>, RIGHT=<span class="number">3&#x27;d1</span>, FALL_L=<span class="number">3&#x27;d2</span>, FALL_R=<span class="number">3&#x27;d3</span>, </span><br><span class="line">    DIG_L=<span class="number">3&#x27;d4</span>, DIG_R=<span class="number">3&#x27;d5</span>, DIE = <span class="number">3&#x27;d6</span>;</span><br><span class="line">    <span class="keyword">reg</span> [<span class="number">2</span>:<span class="number">0</span>] state, next_state;</span><br><span class="line">    <span class="keyword">reg</span> [<span class="number">4</span>:<span class="number">0</span>] fall_count = <span class="number">5&#x27;d0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">always</span> @(*) <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">case</span> (state)</span><br><span class="line">            LEFT: 		next_state &lt;= !ground ? FALL_L : (dig ? DIG_L : (bump_left ? RIGHT : LEFT));</span><br><span class="line">            RIGHT: 		next_state &lt;= !ground ? FALL_R : (dig ? DIG_R : (bump_right ? LEFT : RIGHT));</span><br><span class="line">            FALL_L:		next_state &lt;= fall_count &gt; <span class="number">5&#x27;d20</span> &amp;&amp; ground ? DIE : (!ground ? FALL_L : LEFT);</span><br><span class="line">			FALL_R:		next_state &lt;= fall_count &gt; <span class="number">5&#x27;d20</span> &amp;&amp; ground ? DIE : (!ground ? FALL_R : RIGHT);</span><br><span class="line">            DIG_L: 		next_state &lt;= !ground ? FALL_L : DIG_L;</span><br><span class="line">            DIG_R:		next_state &lt;= !ground ? FALL_R : DIG_R;</span><br><span class="line">            DIE:		next_state &lt;= DIE;</span><br><span class="line">        <span class="keyword">endcase</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">always</span> @(<span class="keyword">posedge</span> clk, <span class="keyword">posedge</span> areset) <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span>(areset) state &lt;= LEFT;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">begin</span></span><br><span class="line">            state &lt;= next_state;</span><br><span class="line">            <span class="keyword">if</span>(!ground &amp;&amp; fall_count &lt; <span class="number">5&#x27;d31</span>) fall_count &lt;= fall_count + <span class="number">5&#x27;d1</span>;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (!ground &amp;&amp; fall_count == <span class="number">5&#x27;d31</span>)  fall_count &lt;= fall_count;</span><br><span class="line">        	<span class="keyword">else</span> fall_count &lt;= <span class="number">5&#x27;d0</span>;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Output logic</span></span><br><span class="line">    <span class="keyword">always</span> @(*) <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">case</span> (state)</span><br><span class="line">            LEFT: 		&#123;walk_left,walk_right,aaah,digging&#125; &lt;= <span class="number">&#x27;b1000</span>;</span><br><span class="line">            RIGHT: 		&#123;walk_left,walk_right,aaah,digging&#125; &lt;= <span class="number">&#x27;b0100</span>;</span><br><span class="line">            FALL_L: 	&#123;walk_left,walk_right,aaah,digging&#125; &lt;= <span class="number">&#x27;b0010</span>;</span><br><span class="line">            FALL_R: 	&#123;walk_left,walk_right,aaah,digging&#125; &lt;= <span class="number">&#x27;b0010</span>;</span><br><span class="line">            DIG_L: 		&#123;walk_left,walk_right,aaah,digging&#125; &lt;= <span class="number">&#x27;b0001</span>;</span><br><span class="line">            DIG_R:		&#123;walk_left,walk_right,aaah,digging&#125; &lt;= <span class="number">&#x27;b0001</span>;</span><br><span class="line">            DIE: 		&#123;walk_left,walk_right,aaah,digging&#125; &lt;= <span class="number">&#x27;b0000</span>;</span><br><span class="line">        <span class="keyword">endcase</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/verilog/" rel="tag"># verilog</a>
+              <a href="/tags/hdlbits/" rel="tag"># hdlbits</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/01/day3-hexo%E5%B8%B8%E7%94%A8%E6%8C%87%E4%BB%A4/" rel="prev" title="day3_hexo常用指令">
+      <i class="fa fa-chevron-left"></i> day3_hexo常用指令
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/08/23/day4-beautifulsoup-%E6%89%BE%E7%89%B9%E5%AE%9A%E5%AD%97%E5%85%83/" rel="next" title="day4_beautifulsoup 找特定字元">
+      day4_beautifulsoup 找特定字元 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Vector1"><span class="nav-number">1.</span> <span class="nav-text">Vector1</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Unpacked-vs-Packed-Arrays"><span class="nav-number">1.1.</span> <span class="nav-text">Unpacked vs. Packed Arrays</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Gatesv100"><span class="nav-number">2.</span> <span class="nav-text">Gatesv100</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Mux9to1v"><span class="nav-number">3.</span> <span class="nav-text">Mux9to1v</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Mux256to1"><span class="nav-number">4.</span> <span class="nav-text">Mux256to1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Mux256to1v"><span class="nav-number">5.</span> <span class="nav-text">Mux256to1v</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Exams-m2014-q4j"><span class="nav-number">6.</span> <span class="nav-text">Exams&#x2F;m2014 q4j</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Exams-ece241-2014-q1c"><span class="nav-number">7.</span> <span class="nav-text">Exams&#x2F;ece241 2014 q1c</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kmap4"><span class="nav-number">8.</span> <span class="nav-text">Kmap4</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Exams-ece241-2014-q3"><span class="nav-number">9.</span> <span class="nav-text">Exams&#x2F;ece241 2014 q3</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Dff8p"><span class="nav-number">10.</span> <span class="nav-text">Dff8p</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Exams-2014-q4a"><span class="nav-number">11.</span> <span class="nav-text">Exams&#x2F;2014 q4a</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Edgecapture"><span class="nav-number">12.</span> <span class="nav-text">Edgecapture</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Dualedge"><span class="nav-number">13.</span> <span class="nav-text">Dualedge</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Lfsr32"><span class="nav-number">14.</span> <span class="nav-text">Lfsr32</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Exams-ece241-2013-q12"><span class="nav-number">15.</span> <span class="nav-text">Exams&#x2F;ece241 2013 q12</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fsm3onehot"><span class="nav-number">16.</span> <span class="nav-text">Fsm3onehot</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Exams-ece241-2013-q4"><span class="nav-number">17.</span> <span class="nav-text">Exams&#x2F;ece241 2013 q4</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Lemmings2"><span class="nav-number">18.</span> <span class="nav-text">Lemmings2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Lemmings4"><span class="nav-number">19.</span> <span class="nav-text">Lemmings4</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zswang</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分類</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">標籤</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zswang</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: '32px',
+  left: 'unset',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+    </div>
+</body>
+</html>

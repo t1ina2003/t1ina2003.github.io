@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"t1ina2003.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Bit Command Controller 操作原理後,  (以下略稱BitCC)我們來看看 BitCC 如何操作">
+<meta property="og:type" content="article">
+<meta property="og:title" content="day8-i2c_master_byte_ctrl">
+<meta property="og:url" content="http://t1ina2003.github.io/2021/10/28/day8-i2c-master-byte-ctrl/index.html">
+<meta property="og:site_name" content="zswang&#39;s blog">
+<meta property="og:description" content="Bit Command Controller 操作原理後,  (以下略稱BitCC)我們來看看 BitCC 如何操作">
+<meta property="og:locale" content="zh_TW">
+<meta property="article:published_time" content="2021-10-28T06:02:40.000Z">
+<meta property="article:modified_time" content="2021-12-02T16:36:42.326Z">
+<meta property="article:author" content="zswang">
+<meta property="article:tag" content="verilog">
+<meta property="article:tag" content="i2c">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://t1ina2003.github.io/2021/10/28/day8-i2c-master-byte-ctrl/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>day8-i2c_master_byte_ctrl | zswang's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zswang's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://t1ina2003.github.io/2021/10/28/day8-i2c-master-byte-ctrl/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zswang">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zswang's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          day8-i2c_master_byte_ctrl
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2021-10-28 14:02:40" itemprop="dateCreated datePublished" datetime="2021-10-28T14:02:40+08:00">2021-10-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-03 00:36:42" itemprop="dateModified" datetime="2021-12-03T00:36:42+08:00">2021-12-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/verilog/" itemprop="url" rel="index"><span itemprop="name">verilog</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><code>Bit Command Controller</code> 操作原理後,  (以下略稱<code>BitCC</code>)<br>我們來看看 <code>BitCC</code> 如何操作</p>
+<a id="more"></a>
+
+<h1 id="block-diagram"><a href="#block-diagram" class="headerlink" title="block diagram"></a>block diagram</h1><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">                                                        ┌─────────────────────┐</span><br><span class="line">┌───────────────────────────────────────────────────────┤                     │</span><br><span class="line">│                                                       │                     │</span><br><span class="line">│            ┌──────────────────────────────────────────┤                     │  core_cmd</span><br><span class="line">│            │                                 core_txd │ i2c_master_bit_ctrl │◄───────────┐</span><br><span class="line">│            │          ┌──────────────────┐ ┌─────────►│                     │            │</span><br><span class="line">│            │          │                  │ │          │                     ├──────────┐ │</span><br><span class="line">│            │ core_rxd │                  │ │          │                     │          │ │</span><br><span class="line">│            └─────────►│                  │ │          └─────────────────────┘          │ │</span><br><span class="line">│                       │                  │ │                                           │ │</span><br><span class="line">│            din───────►│  shift register  │ │          ┌─────────────────────┐          │ │</span><br><span class="line">│                       │                  │ │          │                     │          │ │</span><br><span class="line">│             ld ────┬─►│                  ├─┤          │                     │          │ │</span><br><span class="line">│                    │  │                  │ │          │                     │ core_ack │ │</span><br><span class="line">│          shift ──┬─┼─►│                  │ │          │                     │◄─────────┘ │</span><br><span class="line">│                  │ │  └──────────────────┘ │          │                     │            │</span><br><span class="line">│                  │ │                       │ core_txd │    state machine    ├────────────┘</span><br><span class="line">│                  │ │  ┌──────────────────┐ ├─────────►│                     │</span><br><span class="line">│                  │ └─►│                  │ │ cnt_done │                     │</span><br><span class="line">│                  │    │ down counter     ├─┼─────────►│                     │</span><br><span class="line">│                  └───►│ (from 7~0 )      │ │          │                     │</span><br><span class="line">│                       └──────────────────┘ └───►dout  └─────────────────────┘</span><br><span class="line">│                                                          ▲  ▲   ▲</span><br><span class="line">│        !nReset───────────────────────────────────────────┘  │   │</span><br><span class="line">│                                                             │   │</span><br><span class="line">│   rst | i2c_al──────────────────────────────────────────────┘   │</span><br><span class="line">│          ▲                                                      │</span><br><span class="line">└──────────┘            ┌──────────────────┐                      │</span><br><span class="line">                        │                  │sta │                 │</span><br><span class="line">                        │                  │sto │                 │</span><br><span class="line">                        │ command register │rd  ├─────────────────┘</span><br><span class="line">                        │                  │wr  │</span><br><span class="line">                        │                  │ack │</span><br><span class="line">                        └──────────────────┘</span><br></pre></td></tr></table></figure>
+<h2 id="說明"><a href="#說明" class="headerlink" title="說明"></a>說明</h2><ol>
+<li>state machine根據系統clk跳動, 因大部分state 參考 core_ack, 所以會絕大部分參考 bit ctrl跳動</li>
+<li>先放掉nReset, 再放rst</li>
+<li>state machine 進入正式 state, byte_ctrl 給 core_cmd</li>
+<li>bit_ctrl 寫完 start 給 core_ack</li>
+<li>bit_ctrl 根據 command register 做事, 每個 bit 給 core_ack</li>
+<li>在此同時, write or read state 會致動 shift, 因此  shift register 會一直往MSB移動</li>
+</ol>
+<h1 id="開始-暫存-讀取寫入counter"><a href="#開始-暫存-讀取寫入counter" class="headerlink" title="開始, 暫存, 讀取寫入counter"></a>開始, 暫存, 讀取寫入counter</h1><h2 id="go-signal"><a href="#go-signal" class="headerlink" title="go-signal"></a>go-signal</h2><p>從 <code>Command Register</code> 來的三種訊號,<br>寫法為start + read, start + write</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">assign</span> go = (read | write | stop) &amp; ~cmd_ack;</span><br></pre></td></tr></table></figure>
+<h2 id="dout"><a href="#dout" class="headerlink" title="dout"></a>dout</h2><p>core_rxd 接在 <code>BitCC</code> 的 dout  </p>
+<ul>
+<li>在IDLE, START會用ld將din資料載入</li>
+<li>shift 訊號將 <code>BitCC</code> 的 dout 放到 LSB</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// assign dout output to shift-register</span></span><br><span class="line"><span class="keyword">assign</span> dout = sr;</span><br><span class="line"></span><br><span class="line"><span class="comment">// generate shift register</span></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clk <span class="keyword">or</span> <span class="keyword">negedge</span> nReset)</span><br><span class="line">  <span class="keyword">if</span> (!nReset)</span><br><span class="line">    sr &lt;= #<span class="number">1</span> <span class="number">8&#x27;h0</span>;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (rst)</span><br><span class="line">    sr &lt;= #<span class="number">1</span> <span class="number">8&#x27;h0</span>;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (ld)</span><br><span class="line">    sr &lt;= #<span class="number">1</span> din;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (shift)</span><br><span class="line">    sr &lt;= #<span class="number">1</span> &#123;sr[<span class="number">6</span>:<span class="number">0</span>], core_rxd&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="Read-Write-counter"><a href="#Read-Write-counter" class="headerlink" title="Read/Write counter"></a>Read/Write counter</h2><p>cnt_done 的週期是 8個 clk<br>但是必須有 ld, shift 才會跳動</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// generate counter</span></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clk <span class="keyword">or</span> <span class="keyword">negedge</span> nReset)</span><br><span class="line">  <span class="keyword">if</span> (!nReset)</span><br><span class="line">    dcnt &lt;= #<span class="number">1</span> <span class="number">3&#x27;h0</span>;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (rst)</span><br><span class="line">    dcnt &lt;= #<span class="number">1</span> <span class="number">3&#x27;h0</span>;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (ld)</span><br><span class="line">    dcnt &lt;= #<span class="number">1</span> <span class="number">3&#x27;h7</span>;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (shift)</span><br><span class="line">    dcnt &lt;= #<span class="number">1</span> dcnt - <span class="number">3&#x27;h1</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">assign</span> cnt_done = ~(|dcnt);</span><br></pre></td></tr></table></figure>
+<h1 id="FSM"><a href="#FSM" class="headerlink" title="FSM"></a>FSM</h1><h2 id="rst-初始化"><a href="#rst-初始化" class="headerlink" title="rst 初始化"></a>rst 初始化</h2><p>跟<code>BitCC</code>一樣, 先放<code>nReset</code>, 再放<code>rst</code></p>
+<h2 id="每個State初始數值"><a href="#每個State初始數值" class="headerlink" title="每個State初始數值"></a>每個State初始數值</h2><p>每輪state開始時先放第8bit給din,<br>shift, ld放掉, byte ack不能給</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// initially reset all signals</span></span><br><span class="line">core_txd &lt;= #<span class="number">1</span> sr[<span class="number">7</span>];</span><br><span class="line">shift    &lt;= #<span class="number">1</span> <span class="number">1&#x27;b0</span>;</span><br><span class="line">ld       &lt;= #<span class="number">1</span> <span class="number">1&#x27;b0</span>;</span><br><span class="line">cmd_ack  &lt;= #<span class="number">1</span> <span class="number">1&#x27;b0</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="6個state"><a href="#6個state" class="headerlink" title="6個state"></a>6個state</h2><ul>
+<li>ST_IDLE: 沒<code>core_ack</code>動作(<code>BitCC</code>給ack), <code>go</code>成立, 可跳進四個state之一.<br>根據 <code>Command Register</code> 給指令 start,read,write 跳state.<br>並且<code>ld</code>拉高, 把 8bit data load 進來.</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br></pre></td><td class="code"><pre><span class="line">ST_IDLE:</span><br><span class="line">	<span class="keyword">if</span> (go)</span><br><span class="line">	    <span class="keyword">if</span> (start)</span><br><span class="line">	        c_state  &lt;= #<span class="number">1</span> ST_START;</span><br><span class="line">	        core_cmd &lt;= #<span class="number">1</span> <span class="meta">`I2C_CMD_START;</span></span><br><span class="line">	    <span class="keyword">else</span> <span class="keyword">if</span> (read)</span><br><span class="line">	        c_state  &lt;= #<span class="number">1</span> ST_READ;</span><br><span class="line">	        core_cmd &lt;= #<span class="number">1</span> <span class="meta">`I2C_CMD_READ;</span></span><br><span class="line">	    <span class="keyword">else</span> <span class="keyword">if</span> (write)</span><br><span class="line">	        c_state  &lt;= #<span class="number">1</span> ST_WRITE;</span><br><span class="line">	        core_cmd &lt;= #<span class="number">1</span> <span class="meta">`I2C_CMD_WRITE;</span></span><br><span class="line">	    <span class="keyword">else</span> <span class="comment">// stop</span></span><br><span class="line">	        c_state  &lt;= #<span class="number">1</span> ST_STOP;</span><br><span class="line">	        core_cmd &lt;= #<span class="number">1</span> <span class="meta">`I2C_CMD_STOP;</span></span><br><span class="line">	    ld &lt;= #<span class="number">1</span> <span class="number">1&#x27;b1</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>ST_START: 有<code>core_ack</code>才動作, 從 <code>Command Register</code> 確認 read/write<br>並且<code>ld</code>還沒放掉.  </li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br></pre></td><td class="code"><pre><span class="line">ST_START:</span><br><span class="line">    <span class="keyword">if</span> (core_ack)</span><br><span class="line">        <span class="keyword">if</span> (read)</span><br><span class="line">            c_state  &lt;= #<span class="number">1</span> ST_READ;</span><br><span class="line">            core_cmd &lt;= #<span class="number">1</span> <span class="meta">`I2C_CMD_READ;</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            c_state  &lt;= #<span class="number">1</span> ST_WRITE;</span><br><span class="line">            core_cmd &lt;= #<span class="number">1</span> <span class="meta">`I2C_CMD_WRITE;</span></span><br><span class="line">        ld &lt;= #<span class="number">1</span> <span class="number">1&#x27;b1</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>ST_WRITE: <code>ld</code>自動放掉, 有<code>core_ack</code>才動作,  <ul>
+<li>cnt_done 未數完前: shift一直動作  </li>
+<li>cnt_done 數完: 跳 ST_ACK 狀態  </li>
+</ul>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (core_ack)</span><br><span class="line">    <span class="keyword">if</span> (cnt_done)</span><br><span class="line">        c_state  &lt;= #<span class="number">1</span> ST_ACK;</span><br><span class="line">        core_cmd &lt;= #<span class="number">1</span> <span class="meta">`I2C_CMD_READ;</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        c_state  &lt;= #<span class="number">1</span> ST_WRITE;       <span class="comment">// stay in same state</span></span><br><span class="line">        core_cmd &lt;= #<span class="number">1</span> <span class="meta">`I2C_CMD_WRITE; // write next bit</span></span><br><span class="line">        shift    &lt;= #<span class="number">1</span> <span class="number">1&#x27;b1</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>ST_READ: 有<code>core_ack</code>才動作, <ul>
+<li>cnt_done 未數完前: shift一直動作, ack_in直接給<code>BitCC</code>的din</li>
+<li>cnt_done 數完: shift一直動作, 跳 ST_ACK 狀態</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br></pre></td><td class="code"><pre><span class="line">ST_READ:</span><br><span class="line">    <span class="keyword">if</span> (core_ack)</span><br><span class="line">        <span class="keyword">if</span> (cnt_done)</span><br><span class="line">            c_state  &lt;= #<span class="number">1</span> ST_ACK;</span><br><span class="line">            core_cmd &lt;= #<span class="number">1</span> <span class="meta">`I2C_CMD_WRITE;</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            c_state  &lt;= #<span class="number">1</span> ST_READ;       <span class="comment">// stay in same state</span></span><br><span class="line">            core_cmd &lt;= #<span class="number">1</span> <span class="meta">`I2C_CMD_READ; // read next bit</span></span><br><span class="line">        shift    &lt;= #<span class="number">1</span> <span class="number">1&#x27;b1</span>;</span><br><span class="line">        core_txd &lt;= #<span class="number">1</span> ack_in;</span><br><span class="line">    <span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>ST_ACK: <code>shift</code>自動放掉, 有<code>core_ack</code>才動作, 沒<code>core_ack</code>輸入ack_in給<code>BitCC</code>的din<ul>
+<li>如果STOP 跳 ST_STOP  </li>
+<li>沒有STOP 跳 ST_IDLE, cmd_ack 給 1(給一個Byte ACK)  </li>
+<li>ack_out = core_rxd (dout) </li>
+<li>core_txd (din) 寫 1 (sda_i回復high)</li>
+<li>如果連 <code>core_ack</code> 都沒有core_txd 寫 ack_in  </li>
+</ul>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (core_ack)</span><br><span class="line">    <span class="keyword">if</span> (stop)</span><br><span class="line">        c_state  &lt;= #<span class="number">1</span> ST_STOP;</span><br><span class="line">        core_cmd &lt;= #<span class="number">1</span> <span class="meta">`I2C_CMD_STOP;</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        c_state  &lt;= #<span class="number">1</span> ST_IDLE;</span><br><span class="line">        core_cmd &lt;= #<span class="number">1</span> <span class="meta">`I2C_CMD_NOP;</span></span><br><span class="line">        cmd_ack  &lt;= #<span class="number">1</span> <span class="number">1&#x27;b1</span>; <span class="comment">// generate command acknowledge signal</span></span><br><span class="line">    ack_out &lt;= #<span class="number">1</span> core_rxd; <span class="comment">// assign ack_out output to bit_controller_rxd (contains last received bit)</span></span><br><span class="line">    core_txd &lt;= #<span class="number">1</span> <span class="number">1&#x27;b1</span>;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    core_txd &lt;= #<span class="number">1</span> ack_in;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>ST_STOP: 有<code>core_ack</code>才動作,  <ul>
+<li>跳 ST_IDLE</li>
+<li>cmd_ack 給 1</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/verilog/" rel="tag"># verilog</a>
+              <a href="/tags/i2c/" rel="tag"># i2c</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/" rel="prev" title="day7-i2c-master-bit-ctrl-模擬">
+      <i class="fa fa-chevron-left"></i> day7-i2c-master-bit-ctrl-模擬
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/" rel="next" title="day9-i2c_master_byte_ctrl 模擬">
+      day9-i2c_master_byte_ctrl 模擬 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#block-diagram"><span class="nav-number">1.</span> <span class="nav-text">block diagram</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AA%AA%E6%98%8E"><span class="nav-number">1.1.</span> <span class="nav-text">說明</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%96%8B%E5%A7%8B-%E6%9A%AB%E5%AD%98-%E8%AE%80%E5%8F%96%E5%AF%AB%E5%85%A5counter"><span class="nav-number">2.</span> <span class="nav-text">開始, 暫存, 讀取寫入counter</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#go-signal"><span class="nav-number">2.1.</span> <span class="nav-text">go-signal</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dout"><span class="nav-number">2.2.</span> <span class="nav-text">dout</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Read-Write-counter"><span class="nav-number">2.3.</span> <span class="nav-text">Read&#x2F;Write counter</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#FSM"><span class="nav-number">3.</span> <span class="nav-text">FSM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#rst-%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">3.1.</span> <span class="nav-text">rst 初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AF%8F%E5%80%8BState%E5%88%9D%E5%A7%8B%E6%95%B8%E5%80%BC"><span class="nav-number">3.2.</span> <span class="nav-text">每個State初始數值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6%E5%80%8Bstate"><span class="nav-number">3.3.</span> <span class="nav-text">6個state</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zswang</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分類</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">標籤</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zswang</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: '32px',
+  left: 'unset',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+    </div>
+</body>
+</html>

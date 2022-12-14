@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"t1ina2003.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本篇講解如何在vscode中進行verilog編譯及測試流程以下安裝流程在 windows11沙盒 中進行">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在 vscode 中進行 verilog simulation">
+<meta property="og:url" content="http://t1ina2003.github.io/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/index.html">
+<meta property="og:site_name" content="zswang&#39;s blog">
+<meta property="og:description" content="本篇講解如何在vscode中進行verilog編譯及測試流程以下安裝流程在 windows11沙盒 中進行">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation_20211202150349.png">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation_20211202150806.png">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation_20211202160421.png">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation_20211202161059.png">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation_20211202163308.png">
+<meta property="article:published_time" content="2021-12-02T05:38:51.000Z">
+<meta property="article:modified_time" content="2021-12-02T16:36:42.342Z">
+<meta property="article:author" content="zswang">
+<meta property="article:tag" content="verilog">
+<meta property="article:tag" content="simulation">
+<meta property="article:tag" content="iverilog">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://t1ina2003.github.io/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation_20211202150349.png">
+
+<link rel="canonical" href="http://t1ina2003.github.io/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>在 vscode 中進行 verilog simulation | zswang's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zswang's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://t1ina2003.github.io/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zswang">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zswang's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          在 vscode 中進行 verilog simulation
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2021-12-02 13:38:51" itemprop="dateCreated datePublished" datetime="2021-12-02T13:38:51+08:00">2021-12-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-03 00:36:42" itemprop="dateModified" datetime="2021-12-03T00:36:42+08:00">2021-12-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/verilog/" itemprop="url" rel="index"><span itemprop="name">verilog</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本篇講解如何在vscode中進行verilog編譯及測試流程<br>以下安裝流程在 windows11沙盒 中進行</p>
+<a id="more"></a>
+
+<h1 id="基本-simulation-功能"><a href="#基本-simulation-功能" class="headerlink" title="基本 simulation 功能"></a>基本 simulation 功能</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://code.visualstudio.com/Download">下載</a>並安裝vscode<br> 另外建議勾選context menu 以及 add path<br> <img src="/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation_20211202150349.png"></li>
+<li><a target="_blank" rel="noopener" href="https://bleyer.org/icarus/">下載</a> 並安裝 Icarus Verilog<br>這邊我選用 iverilog-v11-20210204-x64_setup.exe [44.1MB]<br>使用 Full installation, 並勾選 add to path<br><img src="/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation_20211202150806.png"><br>安裝完記得重開VScode</li>
+<li>vscode安裝 mshr-h 的 <a target="_blank" rel="noopener" href="https://marketplace.visualstudio.com/items?itemName=mshr-h.VerilogHDL">Verilog-HDL/SystemVerilog/Bluespec SystemVerilog</a>  </li>
+<li>vscode安裝 <a target="_blank" rel="noopener" href="https://marketplace.visualstudio.com/items?itemName=wavetrace.wavetrace">WaveTrace</a>  </li>
+<li>vscode安裝 <a target="_blank" rel="noopener" href="https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner">Code Runner</a></li>
+<li>vscode -&gt; File -&gt; Preferences -&gt; Settings -&gt; 右上角 Open Setting (JSON)<figure class="highlight"><table><tr><td class="code"><pre><span class="line"><span class="comment">// For verilog using</span></span><br><span class="line"> &quot;code-runner.saveFileBeforeRun&quot;: true,</span><br><span class="line"> &quot;code-runner.executorMapByGlob&quot;: &#123;</span><br><span class="line">   &quot;*.v&quot;: &quot;cd $dir &amp;&amp; iverilog -o run.vvp \&quot;$fileName\&quot; &amp;&amp; vvp run.vvp&quot;,</span><br><span class="line">   &quot;*.vcd&quot;: &quot;cd $dir &amp;&amp; gtkwave \&quot;$fileName\&quot;&quot;,</span><br><span class="line"> &#125;,</span><br></pre></td></tr></table></figure></li>
+<li>vscode 開啟任意 testbench 檔案  <figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> test (</span><br><span class="line">    <span class="keyword">input</span> clk,</span><br><span class="line">    <span class="keyword">input</span> a,</span><br><span class="line">    <span class="keyword">input</span> b,</span><br><span class="line">    <span class="keyword">output</span> <span class="keyword">reg</span> c</span><br><span class="line">);</span><br><span class="line">    <span class="keyword">always</span> @(<span class="keyword">posedge</span> clk) <span class="keyword">begin</span></span><br><span class="line">        c = a ^ b;</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">endmodule</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> tb_test;</span><br><span class="line"></span><br><span class="line"><span class="comment">// test Parameters</span></span><br><span class="line"><span class="keyword">parameter</span> PERIOD  = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// test Inputs</span></span><br><span class="line"><span class="keyword">reg</span>   clk         = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   a           = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   b           = <span class="number">0</span> ;</span><br><span class="line"></span><br><span class="line"><span class="comment">// test Outputs</span></span><br><span class="line"><span class="keyword">wire</span>  c           ;</span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    <span class="keyword">forever</span> <span class="variable">#(PERIOD/2)</span>  clk=~clk;</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">test  u_test (</span><br><span class="line">    <span class="variable">.clk</span>                     ( clk ),</span><br><span class="line">    <span class="variable">.a</span>                       ( a   ),</span><br><span class="line">    <span class="variable">.b</span>                       ( b   ),</span><br><span class="line"></span><br><span class="line">    <span class="variable">.c</span>                       ( c   )</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span></span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">    <span class="built_in">$dumpfile</span>(<span class="string">&quot;test_tb.vcd&quot;</span>);</span><br><span class="line">    <span class="built_in">$dumpvars</span>();</span><br><span class="line">    #<span class="number">10</span> a = <span class="number">0</span>; b =<span class="number">0</span>;</span><br><span class="line">    #<span class="number">10</span> a = <span class="number">0</span>; b =<span class="number">1</span>;</span><br><span class="line">    #<span class="number">10</span> a = <span class="number">1</span>; b =<span class="number">0</span>;</span><br><span class="line">    #<span class="number">10</span> a = <span class="number">1</span>; b =<span class="number">1</span>;</span><br><span class="line">    #<span class="number">10</span> <span class="built_in">$finish</span>;</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure></li>
+<li>按下 <code>Ctrl + Alt + N</code> 應該會出現如下輸出：<br><img src="/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation_20211202160421.png"></li>
+<li>打開.vcd檔案,按 <code>Add signals</code> 並添加欲觀察之訊號, 會看到如下圖結果。如果有 iverilog錯誤 請確認是否第2步有勾選path選項.<br><img src="/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation_20211202161059.png"><h1 id="額外-Ctags-Integration-功能"><a href="#額外-Ctags-Integration-功能" class="headerlink" title="額外 Ctags Integration 功能"></a>額外 Ctags Integration 功能</h1></li>
+<li>如果需要intellsense之類的功能, 請安裝 <a target="_blank" rel="noopener" href="https://github.com/universal-ctags/ctags-win32/releases">ctags</a>於<code>assets</code>中下載x64的版本</li>
+<li>將 <code>ctags-2021-10-25_p5.9.20211024.0-2-g6f544dfc-x64.zip</code> 內容解壓縮放到任意目錄, 例如 <code>c:\ctags</code> , 確保該目錄下有ctags執行檔</li>
+<li>在<a target="_blank" rel="noopener" href="http://kevinpaper.blogspot.com/2019/04/window10-win10.html">系統環境變數中添加目錄</a>, 在這個範例中就是 <code>c:\ctags</code></li>
+<li>重新啟動vscode, 應該就會看到如下圖所示之效果<br><img src="/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation_20211202163308.png"></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/verilog/" rel="tag"># verilog</a>
+              <a href="/tags/simulation/" rel="tag"># simulation</a>
+              <a href="/tags/iverilog/" rel="tag"># iverilog</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/25/day10-pywinauto%E7%B3%BB%E7%B5%B1%E8%87%AA%E5%8B%95%E5%8C%96/" rel="prev" title="day10-pywinauto系統自動化">
+      <i class="fa fa-chevron-left"></i> day10-pywinauto系統自動化
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/03/day11-%E5%88%9D%E6%8E%A2python%E4%B8%A6%E8%A1%8C%E3%80%81%E5%B9%B3%E8%A1%8C%E3%80%81%E9%9D%9E%E5%90%8C%E6%AD%A5/" rel="next" title="day11-初探python並行、平行、非同步">
+      day11-初探python並行、平行、非同步 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC-simulation-%E5%8A%9F%E8%83%BD"><span class="nav-number">1.</span> <span class="nav-text">基本 simulation 功能</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A1%8D%E5%A4%96-Ctags-Integration-%E5%8A%9F%E8%83%BD"><span class="nav-number">2.</span> <span class="nav-text">額外 Ctags Integration 功能</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zswang</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分類</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">標籤</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zswang</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: '32px',
+  left: 'unset',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+    </div>
+</body>
+</html>

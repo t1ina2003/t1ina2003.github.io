@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"t1ina2003.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="為了更好了解並除錯i2c-master-bit-ctrl這個模組,我建立簡單的testbench檔案">
+<meta property="og:type" content="article">
+<meta property="og:title" content="day7-i2c-master-bit-ctrl-模擬">
+<meta property="og:url" content="http://t1ina2003.github.io/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/index.html">
+<meta property="og:site_name" content="zswang&#39;s blog">
+<meta property="og:description" content="為了更好了解並除錯i2c-master-bit-ctrl這個模組,我建立簡單的testbench檔案">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC_20211027141235.png">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC_20211027143503.png">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC_20211027145014.png">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC_20211027152157.png">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC_20211027173312.png">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC_20211027191609.png">
+<meta property="article:published_time" content="2021-10-27T02:51:44.000Z">
+<meta property="article:modified_time" content="2021-12-02T16:36:42.319Z">
+<meta property="article:author" content="zswang">
+<meta property="article:tag" content="verilog">
+<meta property="article:tag" content="i2c">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://t1ina2003.github.io/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC_20211027141235.png">
+
+<link rel="canonical" href="http://t1ina2003.github.io/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>day7-i2c-master-bit-ctrl-模擬 | zswang's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zswang's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://t1ina2003.github.io/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zswang">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zswang's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          day7-i2c-master-bit-ctrl-模擬
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2021-10-27 10:51:44" itemprop="dateCreated datePublished" datetime="2021-10-27T10:51:44+08:00">2021-10-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-03 00:36:42" itemprop="dateModified" datetime="2021-12-03T00:36:42+08:00">2021-12-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/verilog/" itemprop="url" rel="index"><span itemprop="name">verilog</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>為了更好了解並除錯<code>i2c-master-bit-ctrl</code>這個模組,<br>我建立簡單的testbench檔案</p>
+<a id="more"></a>
+
+<p>簡略設計如下, 名稱保留與原port一樣的名稱. </p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="meta">`<span class="meta-keyword">include</span> &quot;i2c_master_bit_ctrl.v&quot;</span></span><br><span class="line"><span class="meta">`<span class="meta-keyword">include</span> &quot;i2c_master_defines.v&quot;</span></span><br><span class="line"><span class="keyword">module</span> tb_i2c_master_bit_ctrl;</span><br><span class="line"></span><br><span class="line"><span class="comment">// i2c_master_bit_ctrl Parameters</span></span><br><span class="line"><span class="keyword">parameter</span> PERIOD   = <span class="number">10</span>   ;</span><br><span class="line"></span><br><span class="line"><span class="comment">// i2c_master_bit_ctrl Inputs</span></span><br><span class="line"><span class="keyword">reg</span>   clk             = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   rst             = <span class="number">1</span> ;</span><br><span class="line"><span class="keyword">reg</span>   nReset          = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   ena             = <span class="number">1</span> ;</span><br><span class="line"><span class="keyword">reg</span>   [<span class="number">15</span>:<span class="number">0</span>]  clk_cnt = <span class="number">125</span> ; <span class="comment">// 假設i2c 400KHz</span></span><br><span class="line"><span class="keyword">reg</span>   [ <span class="number">3</span>:<span class="number">0</span>]  cmd     = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   din             = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   scl_i           = <span class="number">1</span> ; <span class="comment">// default pull high</span></span><br><span class="line"><span class="keyword">reg</span>   sda_i           = <span class="number">1</span> ; <span class="comment">// default pull high </span></span><br><span class="line"></span><br><span class="line"><span class="comment">// i2c_master_bit_ctrl Outputs</span></span><br><span class="line"><span class="keyword">wire</span>  cmd_ack       ;</span><br><span class="line"><span class="keyword">wire</span>  busy          ;</span><br><span class="line"><span class="keyword">wire</span>  al            ;</span><br><span class="line"><span class="keyword">wire</span>  dout          ;</span><br><span class="line"><span class="keyword">wire</span>  scl_o         ;</span><br><span class="line"><span class="keyword">wire</span>  scl_oen       ;</span><br><span class="line"><span class="keyword">wire</span>  sda_o         ;</span><br><span class="line"><span class="keyword">wire</span>  sda_oen       ;</span><br><span class="line"></span><br><span class="line"><span class="comment">// clk simulation</span></span><br><span class="line"><span class="keyword">initial</span></span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">    <span class="keyword">forever</span> <span class="variable">#(PERIOD/2)</span>  clk=~clk;</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// reset simulation</span></span><br><span class="line"><span class="keyword">initial</span></span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">    <span class="variable">#(PERIOD)</span> nReset  =  <span class="number">1</span>;</span><br><span class="line">    <span class="variable">#(PERIOD*2)</span> rst  =  <span class="number">0</span>;</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// call module</span></span><br><span class="line">i2c_master_bit_ctrl u_i2c_master_bit_ctrl(</span><br><span class="line">    <span class="variable">.clk</span>        ( clk             ),</span><br><span class="line">    ...</span><br><span class="line">    <span class="variable">.sda_oen</span>    ( sda_oen         )</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="comment">// test signal</span></span><br><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">	<span class="built_in">$dumpfile</span>(<span class="string">&quot;testbench.vcd&quot;</span>);</span><br><span class="line">	<span class="built_in">$dumpvars</span>(<span class="number">0</span>);</span><br><span class="line">	<span class="comment">// 模擬訊號會撰寫在此</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    #<span class="number">100</span> <span class="built_in">$finish</span>;</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+<p>接下來依據每一個章節分別模擬訊號,</p>
+<h1 id="PART0-slave-wait-scl-sync-除頻"><a href="#PART0-slave-wait-scl-sync-除頻" class="headerlink" title="PART0 slave_wait, scl_sync, 除頻"></a>PART0 slave_wait, scl_sync, 除頻</h1><h2 id="slave-wait-Clock-Stretching"><a href="#slave-wait-Clock-Stretching" class="headerlink" title="slave_wait (Clock Stretching)"></a>slave_wait (Clock Stretching)</h2><ul>
+<li>目的: 符合 <code>(scl_oen &amp; ~dscl_oen &amp; ~sSCL) | (slave_wait &amp; ~sSCL);</code></li>
+<li>方法: 選用<code>I2C_CMD_STOP</code>作為cmd輸入給模組，因為會有<code>scl_oen</code>上升的狀況<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line">#<span class="number">0</span> cmd = <span class="meta">`I2C_CMD_STOP;</span></span><br><span class="line">#<span class="number">1200</span> scl_i = <span class="number">0</span>;</span><br><span class="line">#<span class="number">1800</span> scl_i = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+假設系統50MHz:</li>
+<li>T0: 下 <code>I2C_CMD_STOP</code> 指令</li>
+<li>T1: <code>scl_i</code> 被降為0, 代表slave clock stretching</li>
+<li>T2: 因為 <code>I2C_CMD_STOP</code> 指令, FSM開始動作產生STOP波形</li>
+<li>T3: 因為 <code>(scl_oen &amp; ~dscl_oen &amp; ~sSCL)</code>條件成立<code>slave_wait</code> 拉高, master發現有clock stretching, 停止cnt, FSM不再跳動</li>
+<li>T4: slave離開忙碌, 恢復SLC</li>
+<li>T5: master在數完 <code>filter_cnt</code> 後, 發現 <code>sSLC</code>恢復了, 解除 <code>slave_wait</code></li>
+</ul>
+<p><img src="/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC_20211027141235.png"></p>
+<h2 id="scl-sync-Clock-Synchronization"><a href="#scl-sync-Clock-Synchronization" class="headerlink" title="scl_sync (Clock Synchronization)"></a>scl_sync (Clock Synchronization)</h2><ul>
+<li>目的: 符合<code>dSCL &amp; ~sSCL &amp; scl_oen;</code>條件  </li>
+<li>方法: 選用<code>I2C_CMD_STOP</code>做為測試用，因為會有<code>scl_oen=1</code>的狀況, <figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line">#<span class="number">0</span> cmd = <span class="meta">`I2C_CMD_STOP;</span></span><br><span class="line">#<span class="number">1200</span> scl_i = <span class="number">0</span>;</span><br><span class="line">#<span class="number">1800</span> scl_i = <span class="number">1</span>;</span><br></pre></td></tr></table></figure></li>
+<li>T0: 下 <code>I2C_CMD_STOP</code> 指令</li>
+<li>T1: 在這個master動作時, 有其他的master把<code>scl_i</code>拉低</li>
+<li>T2: 經過<code>filter_cnt</code>後, 這個masterˋ終於發現有問題，趕緊synchronize</li>
+</ul>
+<p><img src="/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC_20211027143503.png"></p>
+<h2 id="除頻"><a href="#除頻" class="headerlink" title="除頻"></a>除頻</h2><ul>
+<li>目的: 符合<code>(rst || ~|cnt || !ena || scl_sync)</code>除頻重置的條件</li>
+<li>方法: 逐一釋放rst, en, 以及製造 <code>scl_sync</code><figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line">#<span class="number">0</span> cmd = <span class="meta">`I2C_CMD_STOP;</span></span><br><span class="line">#<span class="number">0</span> ena = <span class="number">0</span>;</span><br><span class="line">#<span class="number">400</span> ena = <span class="number">1</span>;</span><br><span class="line">#<span class="number">2200</span> scl_i = <span class="number">0</span>;</span><br></pre></td></tr></table></figure></li>
+<li>T0: 下 <code>I2C_CMD_STOP</code> 指令</li>
+<li>T1: 放掉<code>nReset</code></li>
+<li>T2: 放掉<code>rst</code></li>
+<li>T3: 打開<code>ena</code></li>
+<li>T4: 製造<code>scl_sync</code>  </li>
+</ul>
+<p>可以看到除頻功能正常運作, 除了在T2~T3間有誤判scl_sync, 其餘工作皆正常. </p>
+<p><img src="/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC_20211027145014.png"></p>
+<h1 id="PART1-訊號過濾"><a href="#PART1-訊號過濾" class="headerlink" title="PART1 訊號過濾"></a>PART1 訊號過濾</h1><h2 id="捕捉-cSCL-cSDA-訊號"><a href="#捕捉-cSCL-cSDA-訊號" class="headerlink" title="捕捉 cSCL, cSDA 訊號"></a>捕捉 cSCL, cSDA 訊號</h2><h2 id="過濾-fSCL-fSDA-訊號"><a href="#過濾-fSCL-fSDA-訊號" class="headerlink" title="過濾 fSCL, fSDA 訊號"></a>過濾 fSCL, fSDA 訊號</h2><h2 id="產生過濾完成之sSCL-sSDA-延遲-dSCL-dSDA"><a href="#產生過濾完成之sSCL-sSDA-延遲-dSCL-dSDA" class="headerlink" title="產生過濾完成之sSCL, sSDA, 延遲 dSCL, dSDA"></a>產生過濾完成之sSCL, sSDA, 延遲 dSCL, dSDA</h2><p>把這三個功能放在一張圖解釋  </p>
+<ul>
+<li>目的: 觀察訊號採樣(過濾)的方法</li>
+<li>方法: 僅以SDA為例，讓SDA訊號變化<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line">#<span class="number">1000</span> sda_i = <span class="number">1</span>;</span><br><span class="line">#<span class="number">1001</span> sda_i = <span class="number">0</span>;</span><br></pre></td></tr></table></figure></li>
+<li>T0: <code>sda_i</code>變為1, <code>cSDA</code>變化00 -&gt; 01 -&gt; 11</li>
+<li>T1: <code>cSDA</code>已經是 11, 但<code>fSDA</code>頻率為1MHz比較慢, 所以要慢慢變</li>
+<li>T2: <code>fSDA</code>變化為011, 因為符合<code>&amp;fSDA[2:1] | &amp;fSDA[1:0] | (fSDA[2] &amp; fSDA[0])</code>條件, 輸出<code>sSDA</code>為1</li>
+<li>T3: <code>sda_i</code>變為0, <code>cSDA</code>變化11 -&gt; 10 -&gt; 00</li>
+<li>T4: <code>cSDA</code>已經是 00, 但<code>fSDA</code>頻率為1MHz比較慢, 所以要慢慢變</li>
+</ul>
+<p><img src="/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC_20211027152157.png"></p>
+<p>可將這兩個訊號, 五個位元看作dff串,<br>其中若把cSDA當作T時間, 則cSDA[1]剛好會是T-20ns的訊號<br>而fSDA則是擷取 T-1020ns │ T-2020ns  │ T-3020ns 這三個訊號的其中兩個<br>至於為什麼用這個時間點我<strong>無法解釋</strong>.</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line">             cSDA[<span class="number">0</span>]      cSDA[<span class="number">1</span>]     fSDA[<span class="number">0</span>]     fSDA[<span class="number">1</span>]     fSDA[<span class="number">2</span>]</span><br><span class="line">            ┌───────┐    ┌───────┐   ┌───────┐   ┌───────┐   ┌───────┐</span><br><span class="line">            │  DFF  │    │  DFF  │   │  DFF  │   │  DFF  │   │  DFF  │</span><br><span class="line">            │       │    │       │   │       │   │       │   │       │</span><br><span class="line">sda_i──────►│D     Q├───►│D     Q├──►│D     Q├──►│D     Q├──►│D     Q│</span><br><span class="line">            │       │    │       │   │       │   │       │   │       │</span><br><span class="line">clk  ────┬─►│CLK    │ ┌─►│CLK    │ ┌►│CLK    │ ┌►│CLK    │ ┌►│CLK    │</span><br><span class="line">         │  │  RST  │ │  │  RST  │ │ │  RST  │ │ │  RST  │ │ │  RST  │</span><br><span class="line">         │  └───────┘ │  └───────┘ │ └───────┘ │ └───────┘ │ └───────┘</span><br><span class="line">         │      T     │    T-<span class="number">20</span>ns  │  T-<span class="number">1020</span>ns │ T-<span class="number">2020</span>ns  │ T-<span class="number">3020</span>ns</span><br><span class="line">         └────────────┘            │           │           │</span><br><span class="line">filter_cnt                         │           │           │</span><br><span class="line">     ──────────────────────────────┴───────────┴───────────┘</span><br></pre></td></tr></table></figure>
+<p>若以上無法理解可參考<a target="_blank" rel="noopener" href="https://blog.csdn.net/muxi_huang/article/details/105342916">Opencores上的i2c controller core代码解析</a></p>
+<p>至於<code>dSCL</code>, <code>dSDA</code> 僅只是過一個 DFF 作為delay訊號而已.</p>
+<h1 id="Part2-訊號判斷"><a href="#Part2-訊號判斷" class="headerlink" title="Part2 訊號判斷"></a>Part2 訊號判斷</h1><h2 id="開始結束-START-STOP"><a href="#開始結束-START-STOP" class="headerlink" title="開始結束 START, STOP"></a>開始結束 START, STOP</h2><h2 id="忙碌訊號-Busy"><a href="#忙碌訊號-Busy" class="headerlink" title="忙碌訊號 Busy"></a>忙碌訊號 Busy</h2><p>這兩個訊號也可以合併一起講</p>
+<ul>
+<li>目的: 當外部輸入START, STOP, master要能偵測到</li>
+<li>方法: 試著給外部 <code>scl_i</code>, <code>sda_i</code></li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line">#<span class="number">1000</span> sda_i = <span class="number">1</span>; scl_i = <span class="number">1</span>;</span><br><span class="line">#<span class="number">1001</span> sda_i = <span class="number">0</span>; scl_i = <span class="number">1</span>;</span><br><span class="line">#<span class="number">1002</span> sda_i = <span class="number">0</span>; scl_i = <span class="number">1</span>;</span><br><span class="line">#<span class="number">1003</span> sda_i = <span class="number">0</span>; scl_i = <span class="number">1</span>;</span><br><span class="line">#<span class="number">1004</span> sda_i = <span class="number">1</span>; scl_i = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>T0: <code>scl_i=1</code>時<code>sda_i</code>訊號拉低, 模擬的START訊號</li>
+<li>T1: 經過<code>filter_cnt</code>時間後, 內部<code>sSDA</code>真正拉低, <code>sta_condition</code>條件滿足拉高一個clk,<br><code>busy</code>開始</li>
+<li>T2: <code>scl_i=1</code>時<code>sda_i</code>訊號拉高, 模擬的STOP訊號</li>
+<li>T3: 經過<code>filter_cnt</code>時間後, 內部<code>sSDA</code>真正拉高, <code>sto_condition</code>條件滿足拉高一個clk,<br><code>busy</code>結束</li>
+</ul>
+<p><img src="/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC_20211027173312.png"></p>
+<h2 id="爭輸贏Arbitration-Lost"><a href="#爭輸贏Arbitration-Lost" class="headerlink" title="爭輸贏Arbitration Lost"></a>爭輸贏Arbitration Lost</h2><ul>
+<li>目的: 在wb_c狀態下, 讓仲裁輸掉</li>
+<li>方法: 選用<code>I2C_CMD_WRITE</code>, 在wr_c 時<code>sda_i</code>設為0 (Din為0)<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line">#<span class="number">0</span> cmd = <span class="meta">`I2C_CMD_WRITE; </span></span><br><span class="line">   #<span class="number">0</span> din = <span class="number">1</span>;</span><br><span class="line">#<span class="number">4000</span> sda_i = <span class="number">0</span>; </span><br><span class="line">#<span class="number">1500</span> sda_i = <span class="number">1</span>; </span><br></pre></td></tr></table></figure></li>
+<li>T0: 收到cmd <code>I2C_CMD_WRITE</code>, 下一個state wr_a</li>
+<li>T1: 執行wr_a, 開始拉低SCL, 給SDA Din, 下一個state wr_b</li>
+<li>T2: 執行wr_b, 拉高SCL, 給SDA Din, 下一個state wr_c</li>
+<li>T3: 執行wr_c, 拉高SCL, 給SDA Din, 開啟 <code>sda_chk</code>, 馬上發現別人在這個bit是low, 輸了Arbitration 讓byte-ctrl以及top知道.</li>
+<li>T4: 無法執行wr_d, 被強制跳回IDLE狀態, SCL, SDA維持.</li>
+</ul>
+<p><img src="/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC_20211027191609.png"></p>
+<h1 id="PART3-訊號輸出"><a href="#PART3-訊號輸出" class="headerlink" title="PART3 訊號輸出"></a>PART3 訊號輸出</h1><h2 id="dout"><a href="#dout" class="headerlink" title="dout"></a>dout</h2><h2 id="FSM"><a href="#FSM" class="headerlink" title="FSM"></a>FSM</h2><p>這兩個部份就不多做sim了<br>有興趣的人再去下<code>I2C_CMD_START</code>, <code>I2C_CMD_STOP</code>, <code>I2C_CMD_WRITE</code>, <code>I2C_CMD_READ</code>四個command, 如同前面的cmd下法</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/verilog/" rel="tag"># verilog</a>
+              <a href="/tags/i2c/" rel="tag"># i2c</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/10/26/day6-i2c-master-bit-ctrl/" rel="prev" title="day6-i2c-master_bit_ctrl">
+      <i class="fa fa-chevron-left"></i> day6-i2c-master_bit_ctrl
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/10/28/day8-i2c-master-byte-ctrl/" rel="next" title="day8-i2c_master_byte_ctrl">
+      day8-i2c_master_byte_ctrl <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#PART0-slave-wait-scl-sync-%E9%99%A4%E9%A0%BB"><span class="nav-number">1.</span> <span class="nav-text">PART0 slave_wait, scl_sync, 除頻</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#slave-wait-Clock-Stretching"><span class="nav-number">1.1.</span> <span class="nav-text">slave_wait (Clock Stretching)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#scl-sync-Clock-Synchronization"><span class="nav-number">1.2.</span> <span class="nav-text">scl_sync (Clock Synchronization)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%A4%E9%A0%BB"><span class="nav-number">1.3.</span> <span class="nav-text">除頻</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PART1-%E8%A8%8A%E8%99%9F%E9%81%8E%E6%BF%BE"><span class="nav-number">2.</span> <span class="nav-text">PART1 訊號過濾</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8D%95%E6%8D%89-cSCL-cSDA-%E8%A8%8A%E8%99%9F"><span class="nav-number">2.1.</span> <span class="nav-text">捕捉 cSCL, cSDA 訊號</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%81%8E%E6%BF%BE-fSCL-fSDA-%E8%A8%8A%E8%99%9F"><span class="nav-number">2.2.</span> <span class="nav-text">過濾 fSCL, fSDA 訊號</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A2%E7%94%9F%E9%81%8E%E6%BF%BE%E5%AE%8C%E6%88%90%E4%B9%8BsSCL-sSDA-%E5%BB%B6%E9%81%B2-dSCL-dSDA"><span class="nav-number">2.3.</span> <span class="nav-text">產生過濾完成之sSCL, sSDA, 延遲 dSCL, dSDA</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Part2-%E8%A8%8A%E8%99%9F%E5%88%A4%E6%96%B7"><span class="nav-number">3.</span> <span class="nav-text">Part2 訊號判斷</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%96%8B%E5%A7%8B%E7%B5%90%E6%9D%9F-START-STOP"><span class="nav-number">3.1.</span> <span class="nav-text">開始結束 START, STOP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BF%99%E7%A2%8C%E8%A8%8A%E8%99%9F-Busy"><span class="nav-number">3.2.</span> <span class="nav-text">忙碌訊號 Busy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%88%AD%E8%BC%B8%E8%B4%8FArbitration-Lost"><span class="nav-number">3.3.</span> <span class="nav-text">爭輸贏Arbitration Lost</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PART3-%E8%A8%8A%E8%99%9F%E8%BC%B8%E5%87%BA"><span class="nav-number">4.</span> <span class="nav-text">PART3 訊號輸出</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#dout"><span class="nav-number">4.1.</span> <span class="nav-text">dout</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FSM"><span class="nav-number">4.2.</span> <span class="nav-text">FSM</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zswang</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分類</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">標籤</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zswang</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: '32px',
+  left: 'unset',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+    </div>
+</body>
+</html>

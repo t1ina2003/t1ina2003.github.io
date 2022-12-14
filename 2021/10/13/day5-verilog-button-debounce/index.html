@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"t1ina2003.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="20211018更新 後來發其實這樣的寫法有點問題近期在玩DE1 verilog 程式設計，其中關於Button設計細節  Debounce 機制 模組定義 FSM 定義  FSM 實作">
+<meta property="og:type" content="article">
+<meta property="og:title" content="day5-verilog-button-debounce">
+<meta property="og:url" content="http://t1ina2003.github.io/2021/10/13/day5-verilog-button-debounce/index.html">
+<meta property="og:site_name" content="zswang&#39;s blog">
+<meta property="og:description" content="20211018更新 後來發其實這樣的寫法有點問題近期在玩DE1 verilog 程式設計，其中關於Button設計細節  Debounce 機制 模組定義 FSM 定義  FSM 實作">
+<meta property="og:locale" content="zh_TW">
+<meta property="article:published_time" content="2021-10-13T03:19:33.000Z">
+<meta property="article:modified_time" content="2021-12-02T16:36:42.318Z">
+<meta property="article:author" content="zswang">
+<meta property="article:tag" content="verilog">
+<meta property="article:tag" content="button">
+<meta property="article:tag" content="debounce">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://t1ina2003.github.io/2021/10/13/day5-verilog-button-debounce/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>day5-verilog-button-debounce | zswang's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zswang's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://t1ina2003.github.io/2021/10/13/day5-verilog-button-debounce/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zswang">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zswang's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          day5-verilog-button-debounce
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2021-10-13 11:19:33" itemprop="dateCreated datePublished" datetime="2021-10-13T11:19:33+08:00">2021-10-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-03 00:36:42" itemprop="dateModified" datetime="2021-12-03T00:36:42+08:00">2021-12-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/verilog/" itemprop="url" rel="index"><span itemprop="name">verilog</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><code>20211018更新</code> 後來發其實這樣的寫法有點問題<br>近期在玩DE1 verilog 程式設計，其中關於Button設計細節</p>
+<ol>
+<li>Debounce 機制</li>
+<li>模組定義</li>
+<li>FSM 定義 </li>
+<li>FSM 實作</li>
+</ol>
+<a id="more"></a>
+
+
+<p><code>20211018更新</code><br>在FSM 實作的部分我把count也加進去output logic,<br>如此不妥,<br>1是output邏輯汙染不再只是輸出,<br>2是讓output邏輯無法以@(*)輸出，造成clk delay<br>可以改為使用timer倒數, 在特定state enable, 直到倒數完成送個wire訊號回來跳state</p>
+<h2 id="Debounce-機制"><a href="#Debounce-機制" class="headerlink" title="Debounce 機制"></a>Debounce 機制</h2><p>簡單來說就是避免Button在按壓時的彈跳<br>預期的按壓訊號(button通常是low active):   </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">───┐                              ┌───────  </span><br><span class="line">   └──────────────────────────────┘  </span><br></pre></td></tr></table></figure>
+<p>然而，實際可能的按壓訊號:   </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">───┐   ┌─┐   ┌─────────┐   ┌──┐   ┌───┐                    </span><br><span class="line">   └───┘ └───┘         └───┘  └───┘   └──────────────────  </span><br></pre></td></tr></table></figure>
+<p>所以我們count那些可能錯誤的low active，超過一定數字就認定為使用者真的按下按鈕</p>
+<h2 id="模組定義"><a href="#模組定義" class="headerlink" title="模組定義"></a>模組定義</h2><p>先來看一下模組定義</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> btn_debounce</span><br><span class="line">       #(</span><br><span class="line">           <span class="keyword">parameter</span> COUNT_NUM = <span class="number">5000</span>   <span class="comment">// count次數 </span></span><br><span class="line">       )</span><br><span class="line">       (</span><br><span class="line">           <span class="keyword">input</span> iClk,                  <span class="comment">// 外部頻率</span></span><br><span class="line">           <span class="keyword">input</span> iRst_n,                <span class="comment">// reset訊號</span></span><br><span class="line">           <span class="keyword">input</span> iBtn_n,                <span class="comment">// 按壓訊號</span></span><br><span class="line">           <span class="keyword">output</span> <span class="keyword">reg</span> oBtn,             <span class="comment">// 輸出訊號</span></span><br><span class="line">       );</span><br></pre></td></tr></table></figure>
+<ul>
+<li>count次數 : 監測可能錯誤的low active次數，數值太小會無法濾掉<code>錯誤的按壓</code>，數值太大<code>按鈕反應太慢</code></li>
+<li>外部頻率 : 系統頻率，按鈕的反應時間以這個為準，例如使用50MHz，反應時間就是 20ns*5000 = 100us</li>
+<li>reset訊號 : 系統重置訊號，若收到該訊號，要立刻讓按鈕停止輸出、數數等動作</li>
+<li>按壓訊號 : 來自真實按鈕的按壓訊號，帶有雜訊</li>
+<li>輸出訊號 : 經過debounce輸出的訊號，應該要乾淨、單一</li>
+</ul>
+<h2 id="FSM-定義"><a href="#FSM-定義" class="headerlink" title="FSM 定義"></a>FSM 定義</h2><p>為了使此模組更好理解，此處使用 <a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA#Moore%E6%9C%BA">Moore FSM</a>，定義四個狀態：<br>( Mealy 可以在轉state時輸出<br>    參考 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/oomusou/archive/2011/06/05/fsm_coding_style.html">(原創) 有限狀態機FSM coding style整理 (SOC) (Verilog)</a>)</p>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">localparam</span> IDLE             = <span class="number">0</span>; <span class="comment">// wait for button press</span></span><br><span class="line"><span class="keyword">localparam</span> PRESS            = <span class="number">1</span>; <span class="comment">// check button press, start count, fire after enough count</span></span><br><span class="line"><span class="keyword">localparam</span> FIRE             = <span class="number">2</span>; <span class="comment">// fire signal and wait for btn release</span></span><br><span class="line"><span class="keyword">localparam</span> RELEASE          = <span class="number">3</span>; <span class="comment">// check button release, start count, back to WAIT_PRESS after enough count</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Moore FSM</span></span><br><span class="line"><span class="keyword">reg</span> [<span class="number">1</span>:<span class="number">0</span>]  curr_state       = IDLE;</span><br><span class="line"><span class="keyword">reg</span> [<span class="number">1</span>:<span class="number">0</span>]  next_state;</span><br><span class="line"><span class="keyword">reg</span> [<span class="number">25</span>:<span class="number">0</span>]  count;</span><br></pre></td></tr></table></figure>
+<p>並且定義目前狀態以及未來狀態, 以及定義了一個多bit的count register，作為count用</p>
+<h2 id="FSM-實作"><a href="#FSM-實作" class="headerlink" title="FSM 實作"></a>FSM 實作</h2><p>共分三個部分：</p>
+<ol>
+<li>next state logic 根據 <code>目前state</code> 以及 <code>外部輸入</code> 判斷下一個 state   </li>
+<li>state reg 根據 clk 跳至下一個 state 以及實作 reset  </li>
+<li>output logic 根據目 state 輸出  </li>
+</ol>
+<p>架構如下：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">           ┌────────────────┐     ┌──────────────┐    ┌────────────┐</span><br><span class="line">input ────►│                ├────►│              │    │            │</span><br><span class="line">           │Next State logic│     │State register├─┬─►│Output Logic├────► output</span><br><span class="line">        ┌─►│                │ ┌──►│              │ │  │            │</span><br><span class="line">        │  └────────────────┘ │   └──────────────┘ │  └────────────┘</span><br><span class="line">clock ──┼─────────────────────┘                    │</span><br><span class="line">        └──────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Moore FSM: next state logic</span></span><br><span class="line"><span class="keyword">always</span> @(*) <span class="keyword">begin</span></span><br><span class="line">    <span class="keyword">case</span> (curr_state)</span><br><span class="line">        IDLE:           next_state = (!iBtn_n) ? PRESS : IDLE;</span><br><span class="line">        PRESS:          next_state = (count &gt; COUNT_NUM - <span class="number">1</span>) ? FIRE : PRESS ;</span><br><span class="line">        FIRE:           next_state = RELEASE;</span><br><span class="line">        RELEASE:        next_state = (count &gt; COUNT_NUM - <span class="number">1</span>) ? IDLE : RELEASE ;</span><br><span class="line">        <span class="keyword">default</span>:        next_state = IDLE;</span><br><span class="line">    <span class="keyword">endcase</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Moore FSM: state reg</span></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> iClk <span class="keyword">or</span> <span class="keyword">negedge</span> iRst_n)</span><br><span class="line">    curr_state  &lt;= (!iRst_n) ? IDLE : next_state;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Moore FSM: output logic</span></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> iClk) <span class="keyword">begin</span></span><br><span class="line">    <span class="keyword">case</span> (curr_state)</span><br><span class="line">        IDLE: <span class="keyword">begin</span></span><br><span class="line">            count &lt;= <span class="number">0</span>;</span><br><span class="line">            oBtn &lt;= <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">        PRESS: <span class="keyword">begin</span></span><br><span class="line">            oBtn &lt;= <span class="number">0</span>;</span><br><span class="line">            count &lt;= (!iBtn_n) ? count + <span class="number">1</span> : <span class="number">25&#x27;b0</span>;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">        FIRE: <span class="keyword">begin</span></span><br><span class="line">            count &lt;= <span class="number">0</span>;</span><br><span class="line">            oBtn &lt;= <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">        RELEASE: <span class="keyword">begin</span></span><br><span class="line">            oBtn &lt;= <span class="number">0</span>;</span><br><span class="line">            count &lt;= (iBtn_n) ? count + <span class="number">1</span> : <span class="number">25&#x27;b0</span>;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">endcase</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>程式碼實作：  </p>
+<ol>
+<li>IDLE 狀態： 等待按下按鈕，將counter清空  </li>
+<li>PRESS 狀態: 確認以按下按鈕，開始count  </li>
+<li>FIRE 狀態: 完成count，送出訊號  </li>
+<li>RELEASE 狀態: 計算放開時count，放開足夠久就回到IDLE  </li>
+</ol>
+<h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><ol>
+<li>對於有試著將output logic設計為 always@(*) 但會引來 <a target="_blank" rel="noopener" href="https://blog.csdn.net/u013457088/article/details/46013653">Error: (vsim-3601)</a><br>其因<a target="_blank" rel="noopener" href="https://www.hdlworks.com/hdl_corner/verilog_ref/items/SensitivityList.htm">Sensitive List</a>已經與內部邏輯成為迴圈</li>
+<li>此處設計State為一般版本，如果設計成<a target="_blank" rel="noopener" href="https://www.796t.com/article.php?id=206167">one hot</a>會更好移轉以及Debug</li>
+</ol>
+<h2 id="完整檔案"><a href="#完整檔案" class="headerlink" title="完整檔案"></a><a target="_blank" rel="noopener" href="https://github.com/t1ina2003/my_first_7seg/blob/master/btn_debounce.v">完整檔案</a></h2>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/verilog/" rel="tag"># verilog</a>
+              <a href="/tags/button/" rel="tag"># button</a>
+              <a href="/tags/debounce/" rel="tag"># debounce</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/08/23/day4-beautifulsoup-%E6%89%BE%E7%89%B9%E5%AE%9A%E5%AD%97%E5%85%83/" rel="prev" title="day4_beautifulsoup 找特定字元">
+      <i class="fa fa-chevron-left"></i> day4_beautifulsoup 找特定字元
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/10/26/day6-i2c-master-bit-ctrl/" rel="next" title="day6-i2c-master_bit_ctrl">
+      day6-i2c-master_bit_ctrl <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Debounce-%E6%A9%9F%E5%88%B6"><span class="nav-number">1.</span> <span class="nav-text">Debounce 機制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E7%B5%84%E5%AE%9A%E7%BE%A9"><span class="nav-number">2.</span> <span class="nav-text">模組定義</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FSM-%E5%AE%9A%E7%BE%A9"><span class="nav-number">3.</span> <span class="nav-text">FSM 定義</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FSM-%E5%AF%A6%E4%BD%9C"><span class="nav-number">4.</span> <span class="nav-text">FSM 實作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F"><span class="nav-number">5.</span> <span class="nav-text">注意</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4%E6%AA%94%E6%A1%88"><span class="nav-number">6.</span> <span class="nav-text">完整檔案</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zswang</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分類</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">標籤</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zswang</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: '32px',
+  left: 'unset',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+    </div>
+</body>
+</html>

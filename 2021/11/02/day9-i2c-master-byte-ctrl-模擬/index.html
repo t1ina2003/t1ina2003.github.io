@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"t1ina2003.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="為了更好了解並除錯i2c_master_byte_ctrl這個模組,我建立簡單的testbench檔案">
+<meta property="og:type" content="article">
+<meta property="og:title" content="day9-i2c_master_byte_ctrl 模擬">
+<meta property="og:url" content="http://t1ina2003.github.io/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/index.html">
+<meta property="og:site_name" content="zswang&#39;s blog">
+<meta property="og:description" content="為了更好了解並除錯i2c_master_byte_ctrl這個模組,我建立簡單的testbench檔案">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC_20211111145513.png">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC_20211112172950.png">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC_20211112210115.png">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC_20211112213830.png">
+<meta property="og:image" content="http://t1ina2003.github.io/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC_20211112220140.png">
+<meta property="article:published_time" content="2021-11-02T09:31:02.000Z">
+<meta property="article:modified_time" content="2021-12-02T16:36:42.327Z">
+<meta property="article:author" content="zswang">
+<meta property="article:tag" content="verilog">
+<meta property="article:tag" content="i2c">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://t1ina2003.github.io/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC_20211111145513.png">
+
+<link rel="canonical" href="http://t1ina2003.github.io/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>day9-i2c_master_byte_ctrl 模擬 | zswang's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zswang's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://t1ina2003.github.io/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zswang">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zswang's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          day9-i2c_master_byte_ctrl 模擬
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2021-11-02 17:31:02" itemprop="dateCreated datePublished" datetime="2021-11-02T17:31:02+08:00">2021-11-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-03 00:36:42" itemprop="dateModified" datetime="2021-12-03T00:36:42+08:00">2021-12-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/verilog/" itemprop="url" rel="index"><span itemprop="name">verilog</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>為了更好了解並除錯<code>i2c_master_byte_ctrl</code>這個模組,<br>我建立簡單的testbench檔案</p>
+<a id="more"></a>
+
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="meta">`<span class="meta-keyword">include</span> &quot;i2c_master_byte_ctrl.v&quot;</span></span><br><span class="line"><span class="meta">`<span class="meta-keyword">include</span> &quot;i2c_master_bit_ctrl.v&quot;</span></span><br><span class="line"><span class="meta">`<span class="meta-keyword">include</span> &quot;i2c_master_defines.v&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> <span class="number">_</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// i2c_master_byte_ctrl Parameters</span></span><br><span class="line"><span class="keyword">parameter</span> PERIOD    = <span class="number">10</span>       ;</span><br><span class="line"></span><br><span class="line"><span class="comment">// i2c_master_byte_ctrl Inputs</span></span><br><span class="line"><span class="keyword">reg</span>   clk                                  = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   rst                                  = <span class="number">1</span> ;</span><br><span class="line"><span class="keyword">reg</span>   nReset                               = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   ena                                  = <span class="number">1</span> ;</span><br><span class="line"><span class="keyword">reg</span>   [<span class="number">15</span>:<span class="number">0</span>]  clk_cnt                      = <span class="number">5</span> ; <span class="comment">//若50MHz, 應設為125, 以達到400KHz速度</span></span><br><span class="line"><span class="keyword">reg</span>   start                                = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   stop                                 = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   read                                 = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   write                                = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   ack_in                               = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   [<span class="number">7</span>:<span class="number">0</span>]  din                           = <span class="number">0</span> ;</span><br><span class="line"><span class="keyword">reg</span>   scl_i                                = <span class="number">1</span> ;</span><br><span class="line"><span class="keyword">reg</span>   sda_i                                = <span class="number">1</span> ;</span><br><span class="line"></span><br><span class="line"><span class="comment">// i2c_master_byte_ctrl Outputs</span></span><br><span class="line"><span class="keyword">wire</span>  cmd_ack                              ;</span><br><span class="line"><span class="keyword">wire</span>  ack_out                              ;</span><br><span class="line"><span class="keyword">wire</span>  i2c_busy                             ;</span><br><span class="line"><span class="keyword">wire</span>  i2c_al                               ;</span><br><span class="line"><span class="keyword">wire</span>  [<span class="number">7</span>:<span class="number">0</span>]  dout                          ;</span><br><span class="line"><span class="keyword">wire</span>  scl_o                                ;</span><br><span class="line"><span class="keyword">wire</span>  scl_oen                              ;</span><br><span class="line"><span class="keyword">wire</span>  sda_o                                ;</span><br><span class="line"><span class="keyword">wire</span>  sda_oen                              ;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span></span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">    <span class="keyword">forever</span> <span class="variable">#(PERIOD/2)</span>  clk=~clk;</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span></span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">    <span class="variable">#(PERIOD*2)</span> nReset  =  <span class="number">1</span>;</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">i2c_master_byte_ctrl <span class="number">__</span> (</span><br><span class="line">    <span class="variable">.clk</span>                     ( clk              ),</span><br><span class="line">    ... 省略</span><br><span class="line">    <span class="variable">.sda_oen</span>                 ( sda_oen          )</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    <span class="built_in">$dumpfile</span>(<span class="string">&quot;test.vcd&quot;</span>);</span><br><span class="line">    <span class="built_in">$dumpvars</span>(<span class="number">0</span>);</span><br><span class="line"><span class="comment">// 這邊放置模擬參數</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    #<span class="number">6000</span> <span class="built_in">$finish</span>;</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+<h1 id="狀態跳轉測試"><a href="#狀態跳轉測試" class="headerlink" title="狀態跳轉測試"></a>狀態跳轉測試</h1><h2 id="code"><a href="#code" class="headerlink" title="code"></a>code</h2><ul>
+<li>rst 依序放掉</li>
+<li>給Command Register 訊號 Start+Read</li>
+<li>收到 byte ack 後放掉</li>
+<li>在一段時間後停止模擬</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    <span class="built_in">$dumpfile</span>(<span class="string">&quot;test.vcd&quot;</span>);</span><br><span class="line">    <span class="built_in">$dumpvars</span>();</span><br><span class="line">    #<span class="number">5</span> nReset = <span class="number">1</span>;</span><br><span class="line">    #<span class="number">5</span> rst = <span class="number">0</span>;</span><br><span class="line">    #<span class="number">3</span> start = <span class="number">1</span>; read = <span class="number">1</span>; <span class="comment">// 設定 cr</span></span><br><span class="line">    <span class="keyword">wait</span>(cmd_ack) start = <span class="number">0</span>; read = <span class="number">0</span>; <span class="comment">// 模擬自動 clear cr</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    #<span class="number">4000</span> <span class="built_in">$finish</span>;</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h2 id="waveform"><a href="#waveform" class="headerlink" title="waveform"></a>waveform</h2><p>先看起始部分:</p>
+<ul>
+<li>clk: 系統頻率</li>
+<li>沒寫出來的scl_i, sda_i: 暫時設high以防影響. </li>
+<li>scl_oen, sda_oen: bit ctrl 的輸出, 根據其state會有不同輸出.</li>
+<li>c_state: (byte ctrl 的)<ul>
+<li>因為 byte ctrl 使用系統clk, 很快就跳到 <strong>ST_IDLE</strong>, 並且<strong>指定start指令</strong>給 bit ctrl</li>
+<li>等待 bit ctrl 的 <code>core_ack</code>, 改成跳到 <strong>ST_START</strong>, 並且<strong>指定read指令</strong>給 bit ctrl</li>
+</ul>
+</li>
+<li>core_ack: bit ctrl 每完成一個 bit 指令, 就會回傳 <code>core_ack</code>(內部ack) 給 byte ctrl</li>
+<li>clk_en: 為 bit ctrl 狀態機跳動的頻率, 經prescale value除頻, 為了方便觀察設為 5, 所以只跳動5次</li>
+<li>bit controller.c_state: bit ctrl 的 狀態, 會在每一次 <code>clk_en</code> 之後改變</li>
+</ul>
+<blockquote>
+<p>請特別注意此處的state, 除了IDLE, 即使已經在該state, 收到<code>core_ack</code>才做出動作</p>
+</blockquote>
+<p><img src="/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC_20211111145513.png"></p>
+<h1 id="寫入測試"><a href="#寫入測試" class="headerlink" title="寫入測試"></a>寫入測試</h1><h2 id="code-1"><a href="#code-1" class="headerlink" title="code"></a>code</h2><figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    <span class="built_in">$dumpfile</span>(<span class="string">&quot;test.vcd&quot;</span>);</span><br><span class="line">    <span class="built_in">$dumpvars</span>();</span><br><span class="line">    <span class="keyword">assign</span> scl_i = scl_oen;     <span class="comment">// 讓 scl_i 隨著 scl_oen 波動</span></span><br><span class="line">    sda_i = <span class="number">1</span>;                  <span class="comment">// 假設 slave sda_i 為高阻抗 </span></span><br><span class="line">    #<span class="number">5</span> nReset = <span class="number">1</span>;              <span class="comment">// rst 依序放掉, 第一個要放掉的 low active rst</span></span><br><span class="line">    #<span class="number">5</span> rst = <span class="number">0</span>;                 <span class="comment">// 第二個放掉的 high active rst</span></span><br><span class="line">    #<span class="number">5</span> start = <span class="number">1</span>; write = <span class="number">1</span>;    <span class="comment">// 設定 CR</span></span><br><span class="line">    din = <span class="number">8&#x27;b00111011</span>;          <span class="comment">// din 設定為 讀取地址 0011101, W/R 為 1</span></span><br><span class="line">    <span class="keyword">wait</span>( <span class="number">__</span><span class="variable">.c_state</span> == <span class="number">8</span> ) </span><br><span class="line">    sda_i = <span class="number">0</span>;                  <span class="comment">// slave在 ack state 答覆 ack (sda_i = 0)</span></span><br><span class="line">    <span class="keyword">wait</span>(cmd_ack | i2c_al) </span><br><span class="line">    start = <span class="number">0</span>; write = <span class="number">0</span>; din = <span class="number">8&#x27;b0</span>; sda_i = <span class="number">1</span>; <span class="comment">// 模擬收到 byte ack 後p【放掉 CR</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    #<span class="number">4000</span> <span class="built_in">$finish</span>;</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h2 id="waveform-1"><a href="#waveform-1" class="headerlink" title="waveform"></a>waveform</h2><p>假設寫入為slave地址, 0011101, W/R 為 1 代表想要讀取該地址的資訊</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">clk:                系統頻率  </span><br><span class="line">scl_i, sda_i:       slave 的 scl, sda  </span><br><span class="line">scl_oen, sda_oen:   bit ctrl 輸出, 在SCL為高時保持SDA值  </span><br><span class="line">core_ack:           bit ctrl 每完成一個 bit 指令, 就會回傳 內部ack 給 byte ctrl  </span><br><span class="line">c_state:            byte ctrl 的狀態, 使用系統clk  </span><br><span class="line">din:                地址 + W&#x2F;R  </span><br><span class="line">ack_out:            傳遞到 top 的 ack 訊號  </span><br></pre></td></tr></table></figure>
+<p>寫入7-bit addr, 在寫入1 bit W/R, 接著收ACK</p>
+<p><img src="/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC_20211112172950.png"></p>
+<h1 id="Aribitration-Lost"><a href="#Aribitration-Lost" class="headerlink" title="Aribitration Lost"></a>Aribitration Lost</h1><h2 id="code-2"><a href="#code-2" class="headerlink" title="code"></a>code</h2><figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 硬刻出scl_i跟sda_i</span></span><br><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    #<span class="number">200</span></span><br><span class="line">    <span class="keyword">repeat</span>(<span class="number">9</span>) <span class="keyword">begin</span></span><br><span class="line">        #<span class="number">180</span> scl_i = ~scl_i;</span><br><span class="line">        #<span class="number">180</span> scl_i = ~scl_i;</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">0</span>; <span class="comment">// 必須在 scl low 才可以改變值</span></span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">0</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">0</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">0</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="comment">// 這部分雷同上一個實驗, 取消掉 scl_i, sda_i 賦值的部分</span></span><br><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    <span class="built_in">$dumpfile</span>(<span class="string">&quot;test.vcd&quot;</span>);</span><br><span class="line">    <span class="built_in">$dumpvars</span>();</span><br><span class="line">    <span class="comment">//assign scl_i = scl_oen;     // 讓 scl_i 隨著 scl_oen 波動</span></span><br><span class="line">    <span class="comment">//sda_i = 1;                  // 假設 slave sda_i 為高阻抗 </span></span><br><span class="line">    #<span class="number">5</span> nReset = <span class="number">1</span>;              <span class="comment">// rst 依序放掉, 第一個要放掉的 low active rst</span></span><br><span class="line">    #<span class="number">5</span> rst = <span class="number">0</span>;                 <span class="comment">// 第二個放掉的 high active rst</span></span><br><span class="line">    #<span class="number">5</span> start = <span class="number">1</span>; write = <span class="number">1</span>;    <span class="comment">// 設定 CR</span></span><br><span class="line">    din = <span class="number">8&#x27;b00111011</span>;          <span class="comment">// din 設定為 讀取地址 0011101, W/R 為 1</span></span><br><span class="line">    <span class="keyword">wait</span>( <span class="number">__</span><span class="variable">.c_state</span> == <span class="number">8</span> ) </span><br><span class="line">    sda_i = <span class="number">0</span>;                  <span class="comment">// slave在 ack state 答覆 ack (sda_i = 0)</span></span><br><span class="line">    <span class="keyword">wait</span>(cmd_ack | i2c_al) </span><br><span class="line">    start = <span class="number">0</span>; write = <span class="number">0</span>; din = <span class="number">8&#x27;b0</span>; sda_i = <span class="number">1</span>; <span class="comment">// 模擬收到 byte ack 後p【放掉 CR</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h2 id="waveform-2"><a href="#waveform-2" class="headerlink" title="waveform"></a>waveform</h2><p>當aribitration Lost發生時, master本身進入 <code>ST_IDLE</code>, 下空指令 <code>I2C_CMD_NOP</code><br><img src="/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC_20211112210115.png"> </p>
+<h1 id="slave-wait"><a href="#slave-wait" class="headerlink" title="slave_wait"></a>slave_wait</h1><h2 id="code-3"><a href="#code-3" class="headerlink" title="code"></a>code</h2><figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    #<span class="number">200</span> <span class="comment">// 讓SCL與master的不同步</span></span><br><span class="line">    #<span class="number">200</span> scl_i = <span class="number">0</span>;</span><br><span class="line">    #<span class="number">600</span> scl_i = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">repeat</span>(<span class="number">9</span>) <span class="keyword">begin</span></span><br><span class="line">        #<span class="number">200</span> scl_i = ~scl_i;</span><br><span class="line">        #<span class="number">400</span> scl_i = ~scl_i;</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">0</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">0</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">0</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h2 id="waveform-3"><a href="#waveform-3" class="headerlink" title="waveform"></a>waveform</h2><p>slave_wait 會讓 bit ctrl rst, 慢速 clock 重算.<br>直到 iSCL 為 high 才重新計算<br><img src="/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC_20211112213830.png"></p>
+<h1 id="scl-sync"><a href="#scl-sync" class="headerlink" title="scl_sync"></a>scl_sync</h1><h2 id="code-4"><a href="#code-4" class="headerlink" title="code"></a>code</h2><figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    #<span class="number">200</span></span><br><span class="line">    #<span class="number">200</span> scl_i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">repeat</span>(<span class="number">9</span>) <span class="keyword">begin</span></span><br><span class="line">        #<span class="number">180</span> scl_i = ~scl_i;</span><br><span class="line">        #<span class="number">100</span> scl_i = ~scl_i;</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span> <span class="keyword">begin</span></span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">0</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">0</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">0</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line">    @(<span class="keyword">negedge</span> scl_i) #<span class="number">100</span>  sda_i = <span class="number">1</span>; </span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h2 id="waveform-4"><a href="#waveform-4" class="headerlink" title="waveform"></a>waveform</h2><p>在oSCL HIGH時, 若發現 iSCL negedge 則讓 慢速clk 重算.<br><img src="/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC_20211112220140.png"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/verilog/" rel="tag"># verilog</a>
+              <a href="/tags/i2c/" rel="tag"># i2c</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/10/28/day8-i2c-master-byte-ctrl/" rel="prev" title="day8-i2c_master_byte_ctrl">
+      <i class="fa fa-chevron-left"></i> day8-i2c_master_byte_ctrl
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/11/25/day10-pywinauto%E7%B3%BB%E7%B5%B1%E8%87%AA%E5%8B%95%E5%8C%96/" rel="next" title="day10-pywinauto系統自動化">
+      day10-pywinauto系統自動化 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%8B%80%E6%85%8B%E8%B7%B3%E8%BD%89%E6%B8%AC%E8%A9%A6"><span class="nav-number">1.</span> <span class="nav-text">狀態跳轉測試</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#code"><span class="nav-number">1.1.</span> <span class="nav-text">code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#waveform"><span class="nav-number">1.2.</span> <span class="nav-text">waveform</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AF%AB%E5%85%A5%E6%B8%AC%E8%A9%A6"><span class="nav-number">2.</span> <span class="nav-text">寫入測試</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#code-1"><span class="nav-number">2.1.</span> <span class="nav-text">code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#waveform-1"><span class="nav-number">2.2.</span> <span class="nav-text">waveform</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Aribitration-Lost"><span class="nav-number">3.</span> <span class="nav-text">Aribitration Lost</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#code-2"><span class="nav-number">3.1.</span> <span class="nav-text">code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#waveform-2"><span class="nav-number">3.2.</span> <span class="nav-text">waveform</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#slave-wait"><span class="nav-number">4.</span> <span class="nav-text">slave_wait</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#code-3"><span class="nav-number">4.1.</span> <span class="nav-text">code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#waveform-3"><span class="nav-number">4.2.</span> <span class="nav-text">waveform</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#scl-sync"><span class="nav-number">5.</span> <span class="nav-text">scl_sync</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#code-4"><span class="nav-number">5.1.</span> <span class="nav-text">code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#waveform-4"><span class="nav-number">5.2.</span> <span class="nav-text">waveform</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zswang</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分類</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">標籤</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zswang</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: '32px',
+  left: 'unset',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+    </div>
+</body>
+</html>

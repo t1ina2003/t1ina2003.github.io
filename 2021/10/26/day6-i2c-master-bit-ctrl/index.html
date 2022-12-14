@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"t1ina2003.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="解析來自於OpenCores網站上的I2C元件maintainers是Richard Herveille其中spec部分第五章Architecture共分為9個元件：先探討最基本元件之一 Bit Command Controller">
+<meta property="og:type" content="article">
+<meta property="og:title" content="day6-i2c-master_bit_ctrl">
+<meta property="og:url" content="http://t1ina2003.github.io/2021/10/26/day6-i2c-master-bit-ctrl/index.html">
+<meta property="og:site_name" content="zswang&#39;s blog">
+<meta property="og:description" content="解析來自於OpenCores網站上的I2C元件maintainers是Richard Herveille其中spec部分第五章Architecture共分為9個元件：先探討最基本元件之一 Bit Command Controller">
+<meta property="og:locale" content="zh_TW">
+<meta property="article:published_time" content="2021-10-26T03:24:02.000Z">
+<meta property="article:modified_time" content="2021-12-02T16:36:42.319Z">
+<meta property="article:author" content="zswang">
+<meta property="article:tag" content="verilog">
+<meta property="article:tag" content="i2c">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://t1ina2003.github.io/2021/10/26/day6-i2c-master-bit-ctrl/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>day6-i2c-master_bit_ctrl | zswang's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zswang's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://t1ina2003.github.io/2021/10/26/day6-i2c-master-bit-ctrl/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zswang">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zswang's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          day6-i2c-master_bit_ctrl
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2021-10-26 11:24:02" itemprop="dateCreated datePublished" datetime="2021-10-26T11:24:02+08:00">2021-10-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-03 00:36:42" itemprop="dateModified" datetime="2021-12-03T00:36:42+08:00">2021-12-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/verilog/" itemprop="url" rel="index"><span itemprop="name">verilog</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>解析來自於OpenCores網站上的<a target="_blank" rel="noopener" href="http://www.opencores.org/projects/i2c/">I2C元件</a><br>maintainers是Richard Herveille<br>其中spec部分第五章Architecture共分為9個元件：<br>先探討最基本元件之一 <code>Bit Command Controller</code></p>
+<a id="more"></a>
+<ul>
+<li>參考文件:<ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/357802551">I2C协议及Verilog实现与仿真（一）</a><ul>
+<li>解釋線路接法</li>
+</ul>
+</li>
+<li><a target="_blank" rel="noopener" href="https://www.twblogs.net/a/5b8301342b717766a1eab382">Verilog之i2c協議</a><ul>
+<li>I2C簡潔版</li>
+</ul>
+</li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/muxi_huang/article/details/105342916">Opencores上的i2c controller core代码解析</a><ul>
+<li>對於clk分頻取樣有解釋</li>
+</ul>
+</li>
+<li><a target="_blank" rel="noopener" href="https://www.itread01.com/content/1548954903.html">移植OPENCORES上的I2C MASTER到AXI介面處理器層面實現驅動 之一</a><ul>
+<li>移植的部分</li>
+</ul>
+</li>
+<li><a target="_blank" rel="noopener" href="https://www.twblogs.net/a/5f9e464447b134b550a72d29">Verification of WISHBONE I2C Master Core(IRUN+Simvision)</a><ul>
+<li>sim的用法</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="總圖"><a href="#總圖" class="headerlink" title="總圖"></a>總圖</h1><p>(取自其說明文件)  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">┌─────────┐                               ┌────────────┐</span><br><span class="line">│Prescale │                               │clock       │</span><br><span class="line">│Register ├───────────clk_cnt────────────►│generator   │</span><br><span class="line">└─────────┘                               └────────┬───┘</span><br><span class="line">                                             ▲   clk_en</span><br><span class="line">┌─────────┐                              scl_sync  ▼</span><br><span class="line">│Command  │      ┌────────────┐           ┌──┴─────────┐</span><br><span class="line">│Register ├─────►│            │           │            │</span><br><span class="line">└─────────┘      │ Byte       ├─core_cmd─►│ Bit        │◄───────► SCL</span><br><span class="line">                 │ Command    │           │ Command    │</span><br><span class="line">┌─────────┐      │ Controller │◄─core_ack─┤ Controller │◄───────► SDA</span><br><span class="line">│Status   │◄─────┤            │           │            │</span><br><span class="line">│Register │      └────────────┘           └────────┬───┘</span><br><span class="line">└─────────┘                                   ▲    │</span><br><span class="line">                                              │    │</span><br><span class="line">┌─────────┐                                   │    │</span><br><span class="line">│Transmit │      ┌────────────┐               │    │</span><br><span class="line">│Register ├─────►│            │               │    │</span><br><span class="line">└─────────┘      │ DataIO     │───────────────┘    │</span><br><span class="line">                 │ Shift      │                    │</span><br><span class="line">┌─────────┐      │ Register   │◄───────────────────┘</span><br><span class="line">│Receive  │◄─────┤            │</span><br><span class="line">│Register │      └────────────┘</span><br><span class="line">└─────────┘</span><br></pre></td></tr></table></figure>
+
+<h1 id="bit-controller-區塊圖"><a href="#bit-controller-區塊圖" class="headerlink" title="bit controller 區塊圖"></a>bit controller 區塊圖</h1><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">### 訊號捕捉</span><br><span class="line">            ┌─────────────┐         ┌─────┐</span><br><span class="line">            │             │         │     │</span><br><span class="line"> scl_i─────►│  capture    ├──►sSCL─►│     ├────►dSCL</span><br><span class="line">            │  &amp;          │         │ dff │</span><br><span class="line"> sda_i─────►│  filtered   ├──►sSDA─►│     ├────►dSDA</span><br><span class="line">            │             │         │     │</span><br><span class="line">            └─────────────┘         └─────┘</span><br><span class="line"></span><br><span class="line">### 狀態機</span><br><span class="line">            ┌─────────────┐         ┌───────────┐ scl_oen</span><br><span class="line"> nReset────►│             │ clk_en  │           │ sda_oen</span><br><span class="line">            │             │ nReset  │           │ cmd_ack</span><br><span class="line">    rst────►│ clk enable  │ rst     │ FSM       ├──────────►</span><br><span class="line">            │             ├────────►│           │ sda_chk</span><br><span class="line">    ena────►│             │         │           ├──────────┐</span><br><span class="line">            └─────────────┘         └───────────┘          │</span><br><span class="line">### 狀況判斷                                                │</span><br><span class="line">  sSCL      ┌─────────────┐            sda_oen     sSDA    │</span><br><span class="line">  ─────────►│             │            ────────┐  ──────┐  │</span><br><span class="line">  dSCL      │             │                    ▼        ▼  ▼</span><br><span class="line">  ─────────►│ scl_sync    │                 ┌───────────────────┐</span><br><span class="line">            │             │                 │                   │</span><br><span class="line">        ┌──►│             │                 │                   │</span><br><span class="line">        │   └─────────────┘                 │ aribitration lost │   al</span><br><span class="line">        │                                   │                   ├────►</span><br><span class="line">        │   ┌─────┐                         │                   │</span><br><span class="line">        │   │     │                         └───────────────────┘</span><br><span class="line">scl_oen─┼──►│ dff │                                         ▲ ▲</span><br><span class="line">        │   │     │                                 c_state │ │</span><br><span class="line">        │   └─┬───┘            sSCL                 ────────┘ │</span><br><span class="line">        │     │ dscl_oen       sSDA  ┌───────┐                │</span><br><span class="line">        │     ▼                ─────►│       │sta_condition   │</span><br><span class="line">        │   ┌─────────────┐          │ START ├────────────►   │</span><br><span class="line">        └──►│             │    dSCL  │ &amp;     │sto_condition   │</span><br><span class="line">   sSCL     │ slave_wait  │    dSDA  │ STOP  ├────────────────┘</span><br><span class="line">  ─────────►│             │    ─────►│       │</span><br><span class="line">            └─────────────┘          └───────┘</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h1 id="關於rst"><a href="#關於rst" class="headerlink" title="關於rst"></a>關於rst</h1><p>系統中分為high active <code>rst</code>, 跟low active <code>nReset</code>,<br>正確觸發方式為先 <code>nReset</code><br>再正 <code>rst</code> 一次</p>
+<br>
+
+<blockquote>
+<p>原始碼順序為狀況判斷(1/2), 訊號捕捉, 狀況判斷(2/2), 狀態機<br>以下根據原始碼順序進行分析</p>
+</blockquote>
+<br>
+
+<h1 id="PART1-狀況判斷-1-2"><a href="#PART1-狀況判斷-1-2" class="headerlink" title="PART1 狀況判斷(1/2)"></a>PART1 狀況判斷(1/2)</h1><br>
+
+<h2 id="slave-wait-Clock-Stretching"><a href="#slave-wait-Clock-Stretching" class="headerlink" title="slave_wait (Clock Stretching)"></a>slave_wait (Clock Stretching)</h2><p>slave 忙碌, 會將SCL拉低, 稱為<code>Clock Stretching</code></p>
+<ul>
+<li>如果master<code>scl_oen</code>輸出high, 卻收到低<code>sSCL</code>, 則slave忙碌中  </li>
+<li>如果slave忙碌中, <code>sSCL</code>未拉高之前, 則slave忙碌中  </li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clk <span class="keyword">or</span> <span class="keyword">negedge</span> nReset)</span><br><span class="line">  <span class="keyword">if</span> (!nReset) slave_wait &lt;= <span class="number">1&#x27;b0</span>;</span><br><span class="line">  <span class="keyword">else</span>         slave_wait &lt;= (scl_oen &amp; ~dscl_oen &amp; ~sSCL) | (slave_wait &amp; ~sSCL);</span><br></pre></td></tr></table></figure>
+<br>
+
+<h2 id="scl-sync-Clock-Synchronization"><a href="#scl-sync-Clock-Synchronization" class="headerlink" title="scl_sync (Clock Synchronization)"></a>scl_sync (Clock Synchronization)</h2><p>線路中存在多個master, 彼此間同步SCL頻率, 稱為 <code>Clock Synchronization</code></p>
+<ul>
+<li>當裝置scl_oen為high, 其他裝置把SCL拉低時, 就會發出 scl_sync 訊號</li>
+<li>發出 scl_sync 訊號將導致 clk enable signal 重新計數</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">204</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">wire</span> scl_sync   = dSCL &amp; ~sSCL &amp; scl_oen;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>其實 <code>slave_wait</code> 跟 <code>scl_sync</code> 很相似<br>只是 <code>slave_wait</code> 是 SCL 想 high 卻還是 low<br>只是 <code>scl_sync</code> 是 SCL 該 high 時被拉 low<br>master對這兩者採取妥協政策,<br><code>slave_wait</code> 等待SCL, <code>scl_sync</code> 跟隨 SCL</p>
+</blockquote>
+<br>
+
+<h2 id="clk-enable-signal-除頻"><a href="#clk-enable-signal-除頻" class="headerlink" title="clk enable signal 除頻"></a>clk enable signal 除頻</h2><p>除頻, 給狀態機使用</p>
+<ul>
+<li>先放開 nReset, 再放開 rst, 且開啟 en</li>
+<li>根據 clk_cnt(clock prescale value) 除頻, 給出 clk_en 供 FSM 使用</li>
+<li>根據 scl_sync 實作 <code>Clock Synchronization</code></li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clk <span class="keyword">or</span> <span class="keyword">negedge</span> nReset)</span><br><span class="line">  <span class="keyword">if</span> (~nReset)</span><br><span class="line">  <span class="keyword">begin</span></span><br><span class="line">      cnt    &lt;= #<span class="number">1</span> <span class="number">16&#x27;h0</span>;</span><br><span class="line">      clk_en &lt;= #<span class="number">1</span> <span class="number">1&#x27;b1</span>;</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (rst || ~|cnt || !ena || scl_sync)</span><br><span class="line">  <span class="keyword">begin</span></span><br><span class="line">      cnt    &lt;= #<span class="number">1</span> clk_cnt;</span><br><span class="line">      clk_en &lt;= #<span class="number">1</span> <span class="number">1&#x27;b1</span>;</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (slave_wait)</span><br><span class="line">  <span class="keyword">begin</span></span><br><span class="line">      cnt    &lt;= #<span class="number">1</span> cnt;</span><br><span class="line">      clk_en &lt;= #<span class="number">1</span> <span class="number">1&#x27;b0</span>;    </span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  <span class="keyword">begin</span></span><br><span class="line">      cnt    &lt;= #<span class="number">1</span> cnt - <span class="number">16&#x27;h1</span>;</span><br><span class="line">      clk_en &lt;= #<span class="number">1</span> <span class="number">1&#x27;b0</span>;</span><br><span class="line">  <span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<br>
+
+<h1 id="PART2-訊號捕捉"><a href="#PART2-訊號捕捉" class="headerlink" title="PART2 訊號捕捉"></a>PART2 訊號捕捉</h1><br>
+
+<h2 id="捕捉-cSCL-cSDA-訊號"><a href="#捕捉-cSCL-cSDA-訊號" class="headerlink" title="捕捉 cSCL, cSDA 訊號"></a>捕捉 cSCL, cSDA 訊號</h2><p>捕捉窗格為2個 posedge clk, 減供給後續 filter 使用 </p>
+<ul>
+<li> 輸入訊號 scl_i, sda_i 會慢慢位移進 cSCL, cSDA.  </li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">reg</span> [ <span class="number">1</span>:<span class="number">0</span>] cSCL, cSDA;      <span class="comment">// capture SCL and SDA</span></span><br><span class="line"><span class="comment">// capture SDA and SCL</span></span><br><span class="line"><span class="comment">// reduce metastability risk</span></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clk <span class="keyword">or</span> <span class="keyword">negedge</span> nReset)</span><br><span class="line">      cSCL &lt;= &#123;cSCL[<span class="number">0</span>],scl_i&#125;;</span><br><span class="line">      cSDA &lt;= &#123;cSDA[<span class="number">0</span>],sda_i&#125;;</span><br></pre></td></tr></table></figure>
+<br>
+
+<h2 id="擷取-fSCL-fSDA-訊號"><a href="#擷取-fSCL-fSDA-訊號" class="headerlink" title="擷取 fSCL, fSDA 訊號"></a>擷取 fSCL, fSDA 訊號</h2><p>若系統頻率50MHz, clk_cnt若設為125, 則clk_en為400KHz, filter_cnt再位移2 bit, 則是大約1.6MHz.  </p>
+<ul>
+<li>將 clock prescale value 除以四當作擷取頻率</li>
+<li>輸入訊號 scl_i, sda_i 會慢慢位移進 fSCL, fSDA. </li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">257</span><br><span class="line">258</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (~|filter_cnt) filter_cnt &lt;= clk_cnt &gt;&gt; <span class="number">2</span>; <span class="comment">//16x I2C bus frequency</span></span><br><span class="line"><span class="keyword">else</span>                   filter_cnt &lt;= filter_cnt -<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clk <span class="keyword">or</span> <span class="keyword">negedge</span> nReset)</span><br><span class="line">      fSCL &lt;= &#123;fSCL[<span class="number">1</span>:<span class="number">0</span>],cSCL[<span class="number">1</span>]&#125;;</span><br><span class="line">      fSDA &lt;= &#123;fSDA[<span class="number">1</span>:<span class="number">0</span>],cSDA[<span class="number">1</span>]&#125;;</span><br></pre></td></tr></table></figure>
+<br>
+
+<h2 id="擷取完成sSCL-sSDA-延遲-dSCL-dSDA"><a href="#擷取完成sSCL-sSDA-延遲-dSCL-dSDA" class="headerlink" title="擷取完成sSCL, sSDA, 延遲 dSCL, dSDA"></a>擷取完成sSCL, sSDA, 延遲 dSCL, dSDA</h2><p>產出之訊號可減少 metastability 風險</p>
+<ul>
+<li>若 <code>fSCL</code> 中有任意 兩個值為 1，則<code>sSCL</code>為High  </li>
+<li>若 <code>fSDA</code> 中有任意 兩個值為 1，則<code>sSDA</code>為High</li>
+<li>產生各自的delay訊號</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clk <span class="keyword">or</span> <span class="keyword">negedge</span> nReset)</span><br><span class="line">      sSCL &lt;= #<span class="number">1</span> &amp;fSCL[<span class="number">2</span>:<span class="number">1</span>] | &amp;fSCL[<span class="number">1</span>:<span class="number">0</span>] | (fSCL[<span class="number">2</span>] &amp; fSCL[<span class="number">0</span>]);</span><br><span class="line">      sSDA &lt;= #<span class="number">1</span> &amp;fSDA[<span class="number">2</span>:<span class="number">1</span>] | &amp;fSDA[<span class="number">1</span>:<span class="number">0</span>] | (fSDA[<span class="number">2</span>] &amp; fSDA[<span class="number">0</span>]);</span><br><span class="line">      dSCL &lt;= #<span class="number">1</span> sSCL;</span><br><span class="line">      dSDA &lt;= #<span class="number">1</span> sSDA;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>假設在50MHz的頻率下，<code>cSCL[0]</code>, <code>cSCL[1]</code>, <code>fSCL[0]</code>, <code>fSCL[1]</code>, <code>fSCL[2]</code>,<br>延遲分別為  T, T-20ns, T-1020ns, T-2020ns, T-3020ns<br>而一個400KHz的I2C訊號間隔至少2500ns, 此處算是抓的細了一點.<br>此處可以看成很嚴格監測訊號為 0 的狀態, 只要有幾個 1 就不為 0 </p>
+</blockquote>
+<br>
+
+<h1 id="Part3-狀況判斷-2-2"><a href="#Part3-狀況判斷-2-2" class="headerlink" title="Part3 狀況判斷(2/2)"></a>Part3 狀況判斷(2/2)</h1><br>
+
+<h2 id="開始結束-START-STOP"><a href="#開始結束-START-STOP" class="headerlink" title="開始結束 START, STOP"></a>開始結束 START, STOP</h2><p>此處用兩個暫存器監測START, STOP兩個狀態,<br>訊號是使用過濾好的 <code>sSCL</code>, <code>sSDA</code><br><code>sSCL</code>為高,<code>sSDA</code>由高轉低,稱為START<br><code>sSCL</code>為高,<code>sSDA</code>由低轉高,稱為STOP</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">reg</span> sta_condition;</span><br><span class="line"><span class="keyword">reg</span> sto_condition;</span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clk <span class="keyword">or</span> <span class="keyword">negedge</span> nReset)</span><br><span class="line">      sta_condition &lt;= #<span class="number">1</span> ~sSDA &amp;  dSDA &amp; sSCL;</span><br><span class="line">      sto_condition &lt;= #<span class="number">1</span>  sSDA &amp; ~dSDA &amp; sSCL;</span><br></pre></td></tr></table></figure>
+<br>
+
+<h2 id="忙碌訊號-Busy"><a href="#忙碌訊號-Busy" class="headerlink" title="忙碌訊號 Busy"></a>忙碌訊號 Busy</h2><p>rst過後不busy<br>START後busy<br>busy時busy<br>STOP後不busy</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clk <span class="keyword">or</span> <span class="keyword">negedge</span> nReset)</span><br><span class="line">  <span class="keyword">if</span>      (!nReset) busy &lt;= #<span class="number">1</span> <span class="number">1&#x27;b0</span>;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (rst    ) busy &lt;= #<span class="number">1</span> <span class="number">1&#x27;b0</span>;</span><br><span class="line">  <span class="keyword">else</span>              busy &lt;= #<span class="number">1</span> (sta_condition | busy) &amp; ~sto_condition;</span><br></pre></td></tr></table></figure>
+<br>
+
+<h2 id="爭輸贏Arbitration-Lost"><a href="#爭輸贏Arbitration-Lost" class="headerlink" title="爭輸贏Arbitration Lost"></a>爭輸贏Arbitration Lost</h2><p>仲裁輸掉分為兩個部分:</p>
+<ol>
+<li>(僅wr_c狀態, 才做<code>sda_chks</code>)當master嘗試寫<code>sda_oen</code>(輸出)為高, 卻發現無法, 並偵測到<code>sSDA</code>(輸入)為低, 輸掉仲裁(地址小的優先)  </li>
+</ol>
+<p>或  </p>
+<ol start="2">
+<li>沒有IDLE時(傳輸途中), 收到STOP訊號(總線上面感測到), 還沒到轉state的段落, 仲裁就輸掉</li>
+</ol>
+<p>仲裁輸掉主要導致top部分會將資料重寫或者重讀. 一旦仲裁輸掉就會讓byte-ctrl回到IDLE狀態</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">reg</span> cmd_stop;</span><br><span class="line">    <span class="keyword">always</span> @(<span class="keyword">posedge</span> clk <span class="keyword">or</span> <span class="keyword">negedge</span> nReset)</span><br><span class="line">      <span class="keyword">if</span> (~nReset)</span><br><span class="line">          cmd_stop &lt;= #<span class="number">1</span> <span class="number">1&#x27;b0</span>;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (rst)</span><br><span class="line">          cmd_stop &lt;= #<span class="number">1</span> <span class="number">1&#x27;b0</span>;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (clk_en)</span><br><span class="line">          cmd_stop &lt;= #<span class="number">1</span> cmd == <span class="meta">`I2C_CMD_STOP;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">always</span> @(<span class="keyword">posedge</span> clk <span class="keyword">or</span> <span class="keyword">negedge</span> nReset)</span><br><span class="line">      <span class="keyword">if</span> (~nReset)</span><br><span class="line">          al &lt;= #<span class="number">1</span> <span class="number">1&#x27;b0</span>;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (rst)</span><br><span class="line">          al &lt;= #<span class="number">1</span> <span class="number">1&#x27;b0</span>;</span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">          al &lt;= #<span class="number">1</span> (sda_chk &amp; ~sSDA &amp; sda_oen) | (|c_state &amp; sto_condition &amp; ~cmd_stop);</span><br></pre></td></tr></table></figure>
+<br>
+
+<h1 id="PART4-狀態機"><a href="#PART4-狀態機" class="headerlink" title="PART4 狀態機"></a>PART4 狀態機</h1><h2 id="dout"><a href="#dout" class="headerlink" title="dout"></a>dout</h2><p>iSCL上升時讀取iSDA送進去給SR(ShiftRegister)</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">358</span><br><span class="line">359</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clk)</span><br><span class="line">      <span class="keyword">if</span> (sSCL &amp; ~dSCL) dout &lt;= #<span class="number">1</span> sSDA;</span><br></pre></td></tr></table></figure>
+<h2 id="FSM"><a href="#FSM" class="headerlink" title="FSM"></a>FSM</h2><p>rst 時 不給ack, scl,sda輸出掛z, 不檢查sda<br>其餘狀態如下:</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">408</span><br><span class="line">409</span><br><span class="line">410</span><br><span class="line">411</span><br><span class="line">412</span><br><span class="line">413</span><br><span class="line">414</span><br><span class="line">415</span><br><span class="line">416</span><br><span class="line">417</span><br><span class="line">418</span><br><span class="line">419</span><br><span class="line">420</span><br><span class="line">421</span><br><span class="line">422</span><br><span class="line">423</span><br><span class="line">424</span><br><span class="line">425</span><br></pre></td><td class="code"><pre><span class="line">idle    : I2C_CMD_START,I2C_CMD_STOP,I2C_CMD_WRITE,I2C_CMD_READ選一個</span><br><span class="line">start_a : SCL x SDA H </span><br><span class="line">start_b : SCL H SDA H</span><br><span class="line">start_c : SCL H SDA L </span><br><span class="line">start_d : SCL H SDA L </span><br><span class="line">start_e : SCL L SDA L  cmd_ack</span><br><span class="line">stop_a  : SCL L SDA L </span><br><span class="line">stop_b  : SCL H SDA L </span><br><span class="line">stop_c  : SCL H SDA L </span><br><span class="line">stop_d  : SCL H SDA H  cmd_ack</span><br><span class="line">rd_a    : SCL L SDA H </span><br><span class="line">rd_b    : SCL H SDA H</span><br><span class="line">rd_c    : SCL H SDA H </span><br><span class="line">rd_d    : SCL L SDA H  cmd_ack</span><br><span class="line">wr_a    : SCL L SDA=Din </span><br><span class="line">wr_b    : SCL H SDA=Din</span><br><span class="line">wr_c    : SCL H SDA=Din sda_chks</span><br><span class="line">wr_d    : SCL L SDA=Din cmd_ack</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/verilog/" rel="tag"># verilog</a>
+              <a href="/tags/i2c/" rel="tag"># i2c</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/10/13/day5-verilog-button-debounce/" rel="prev" title="day5-verilog-button-debounce">
+      <i class="fa fa-chevron-left"></i> day5-verilog-button-debounce
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/10/27/day7-i2c-master-bit-ctrl-%E6%A8%A1%E6%93%AC/" rel="next" title="day7-i2c-master-bit-ctrl-模擬">
+      day7-i2c-master-bit-ctrl-模擬 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B8%BD%E5%9C%96"><span class="nav-number">1.</span> <span class="nav-text">總圖</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#bit-controller-%E5%8D%80%E5%A1%8A%E5%9C%96"><span class="nav-number">2.</span> <span class="nav-text">bit controller 區塊圖</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%9C%E6%96%BCrst"><span class="nav-number">3.</span> <span class="nav-text">關於rst</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PART1-%E7%8B%80%E6%B3%81%E5%88%A4%E6%96%B7-1-2"><span class="nav-number">4.</span> <span class="nav-text">PART1 狀況判斷(1&#x2F;2)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#slave-wait-Clock-Stretching"><span class="nav-number">4.1.</span> <span class="nav-text">slave_wait (Clock Stretching)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#scl-sync-Clock-Synchronization"><span class="nav-number">4.2.</span> <span class="nav-text">scl_sync (Clock Synchronization)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#clk-enable-signal-%E9%99%A4%E9%A0%BB"><span class="nav-number">4.3.</span> <span class="nav-text">clk enable signal 除頻</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PART2-%E8%A8%8A%E8%99%9F%E6%8D%95%E6%8D%89"><span class="nav-number">5.</span> <span class="nav-text">PART2 訊號捕捉</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8D%95%E6%8D%89-cSCL-cSDA-%E8%A8%8A%E8%99%9F"><span class="nav-number">5.1.</span> <span class="nav-text">捕捉 cSCL, cSDA 訊號</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%93%B7%E5%8F%96-fSCL-fSDA-%E8%A8%8A%E8%99%9F"><span class="nav-number">5.2.</span> <span class="nav-text">擷取 fSCL, fSDA 訊號</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%93%B7%E5%8F%96%E5%AE%8C%E6%88%90sSCL-sSDA-%E5%BB%B6%E9%81%B2-dSCL-dSDA"><span class="nav-number">5.3.</span> <span class="nav-text">擷取完成sSCL, sSDA, 延遲 dSCL, dSDA</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Part3-%E7%8B%80%E6%B3%81%E5%88%A4%E6%96%B7-2-2"><span class="nav-number">6.</span> <span class="nav-text">Part3 狀況判斷(2&#x2F;2)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%96%8B%E5%A7%8B%E7%B5%90%E6%9D%9F-START-STOP"><span class="nav-number">6.1.</span> <span class="nav-text">開始結束 START, STOP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BF%99%E7%A2%8C%E8%A8%8A%E8%99%9F-Busy"><span class="nav-number">6.2.</span> <span class="nav-text">忙碌訊號 Busy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%88%AD%E8%BC%B8%E8%B4%8FArbitration-Lost"><span class="nav-number">6.3.</span> <span class="nav-text">爭輸贏Arbitration Lost</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PART4-%E7%8B%80%E6%85%8B%E6%A9%9F"><span class="nav-number">7.</span> <span class="nav-text">PART4 狀態機</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#dout"><span class="nav-number">7.1.</span> <span class="nav-text">dout</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FSM"><span class="nav-number">7.2.</span> <span class="nav-text">FSM</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zswang</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分類</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">標籤</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zswang</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: '32px',
+  left: 'unset',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+    </div>
+</body>
+</html>

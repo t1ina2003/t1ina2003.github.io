@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"t1ina2003.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="利用pywinauto打造一個Win視窗自動化流程這一陣子因為需要頻繁連入公司VPN處理事務實在懶得按每個鈕, 就寫Script完成重複的任務.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="day10-pywinauto系統自動化">
+<meta property="og:url" content="http://t1ina2003.github.io/2021/11/25/day10-pywinauto%E7%B3%BB%E7%B5%B1%E8%87%AA%E5%8B%95%E5%8C%96/index.html">
+<meta property="og:site_name" content="zswang&#39;s blog">
+<meta property="og:description" content="利用pywinauto打造一個Win視窗自動化流程這一陣子因為需要頻繁連入公司VPN處理事務實在懶得按每個鈕, 就寫Script完成重複的任務.">
+<meta property="og:locale" content="zh_TW">
+<meta property="article:published_time" content="2021-11-25T03:48:38.000Z">
+<meta property="article:modified_time" content="2021-12-02T16:36:42.311Z">
+<meta property="article:author" content="zswang">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="pywinauto">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://t1ina2003.github.io/2021/11/25/day10-pywinauto%E7%B3%BB%E7%B5%B1%E8%87%AA%E5%8B%95%E5%8C%96/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>day10-pywinauto系統自動化 | zswang's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zswang's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://t1ina2003.github.io/2021/11/25/day10-pywinauto%E7%B3%BB%E7%B5%B1%E8%87%AA%E5%8B%95%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zswang">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zswang's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          day10-pywinauto系統自動化
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2021-11-25 11:48:38" itemprop="dateCreated datePublished" datetime="2021-11-25T11:48:38+08:00">2021-11-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-03 00:36:42" itemprop="dateModified" datetime="2021-12-03T00:36:42+08:00">2021-12-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>利用<a target="_blank" rel="noopener" href="https://github.com/pywinauto/pywinauto">pywinauto</a>打造一個Win視窗自動化流程<br>這一陣子因為需要頻繁連入公司VPN處理事務<br>實在懶得按每個鈕, 就寫Script完成重複的任務.   </p>
+<a id="more"></a>
+
+<h1 id="環境安裝"><a href="#環境安裝" class="headerlink" title="環境安裝"></a>環境安裝</h1><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">pip install -U pywinauto</span><br></pre></td></tr></table></figure>
+<h1 id="測試01-記事本另存新檔"><a href="#測試01-記事本另存新檔" class="headerlink" title="測試01 - 記事本另存新檔"></a>測試01 - 記事本另存新檔</h1><p>按照 <a target="_blank" rel="noopener" href="https://pywinauto.readthedocs.io/en/latest/getting_started.html">官方說明文件</a><br>先對notepad做了一番操作, 大概理解其中的工作原理.<br>官方很貼心地送了一套 <a target="_blank" rel="noopener" href="https://github.com/blackrosezy/gui-inspect-tool">gui-inspect-tool工具包</a><br>認真說, 真的沒有需要,<br>全部操作可以靠 <code>backend=&quot;uia&quot;</code> 以及 <code>print_control_identifiers()</code> 搭配操作, 在command視窗中完成  </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    File name: main.py</span></span><br><span class="line"><span class="string">    Author: zswang</span></span><br><span class="line"><span class="string">    Date created: 11/25/2021</span></span><br><span class="line"><span class="string">    Date last modified: 11/25/2021</span></span><br><span class="line"><span class="string">    Python Version: 3.10.0 64-bit </span></span><br><span class="line"><span class="string">    This file open notepad and save it in &quot;HH_MM_SS.txt&quot; format, </span></span><br><span class="line"><span class="string">    pywinauto test code 01 </span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">from</span> pywinauto.application <span class="keyword">import</span> Application</span><br><span class="line"><span class="keyword">from</span> datetime <span class="keyword">import</span> datetime</span><br><span class="line"></span><br><span class="line">sTime = datetime.today().strftime(<span class="string">&#x27;%H_%M_%S&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot; 直接開新的instance並連接上,此處使用Win32 API &quot;&quot;&quot;</span></span><br><span class="line">app = Application(backend=<span class="string">&quot;uia&quot;</span>).start(<span class="string">&quot;notepad.exe&quot;</span>)</span><br><span class="line">app.Notepad.wait(<span class="string">&#x27;ready&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot; 按下檔案的另存新檔 &quot;&quot;&quot;</span></span><br><span class="line"><span class="comment">## 官方提供的方法</span></span><br><span class="line">app.Dialog.menu_select(<span class="string">&quot;檔案(&amp;F)-&gt;另存新檔(&amp;A)&quot;</span>)</span><br><span class="line"><span class="comment">## 數字Item法</span></span><br><span class="line"><span class="comment"># items = app.Notepad.menu().items()</span></span><br><span class="line"><span class="comment"># app.notepad.menu().item(0).sub_menu().item(4).click()</span></span><br><span class="line"><span class="comment">## 如果用uia開啟, 可以使用keyboaard法</span></span><br><span class="line"><span class="comment"># app[&#x27;Dialog&#x27;][&#x27;應用程式Menu&#x27;].MenuItem1.type_keys(&quot;&#123;DOWN 4&#125;&#123;ENTER&#125;&quot;)</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot; 尋找檔案名稱Edit, 將日期輸入&quot;&quot;&quot;</span></span><br><span class="line"><span class="comment">## 獲取另存檔案 window 各種 control</span></span><br><span class="line"><span class="comment"># app.top_window().print_control_identifiers()</span></span><br><span class="line"><span class="comment">## 風騷操作, 選擇儲存位置</span></span><br><span class="line"><span class="comment"># app.Dialog.SysTreeView32.GetItem(u&quot;\我的最愛\下載&quot;).ClickInput()</span></span><br><span class="line"><span class="comment">## 在樹狀圖中找到 檔案名稱 控制項, 叫做 Edit, 填入時間</span></span><br><span class="line">app.Dialog.Edit.set_edit_text(sTime)</span><br><span class="line"><span class="comment">## 按下 存檔(&amp;S) 按鈕</span></span><br><span class="line">app.Dialog.Button.Click()</span><br><span class="line"></span><br><span class="line">app.Kill_()</span><br></pre></td></tr></table></figure>
+<h1 id="分析視窗"><a href="#分析視窗" class="headerlink" title="分析視窗"></a>分析視窗</h1><p>如果使用uia方式開起, 並使用 <code>app.top_window().print_control_identifiers()</code> 查看<br>會出現以下格式的控制項(Control)清單</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Dialog - &#39;未命名 - 記事本&#39;    (L316, T338, R2368, B1598)</span><br><span class="line">[&#39;Dialog&#39;, &#39;未命名 - 記事本&#39;, &#39;未命名 - 記事本Dialog&#39;]</span><br><span class="line">child_window(title&#x3D;&quot;未命名 - 記事本&quot;, control_type&#x3D;&quot;Window&quot;)</span><br><span class="line">   |</span><br><span class="line">   | Edit - &#39;文字編輯器&#39;    (L329, T435, R2355, B1545)</span><br><span class="line">   | [&#39;Edit&#39;]</span><br><span class="line">   | child_window(title&#x3D;&quot;文字編輯器&quot;, auto_id&#x3D;&quot;15&quot;, control_type&#x3D;&quot;Edit&quot;)</span><br><span class="line">   |    |</span><br><span class="line">   |    | ScrollBar - &#39;垂直&#39;    (L2321, T435, R2355, B1511)</span><br><span class="line">   |    | [&#39;ScrollBar&#39;, &#39;垂直ScrollBar&#39;, &#39;垂直&#39;, &#39;ScrollBar0&#39;, &#39;ScrollBar1&#39;]</span><br><span class="line">   |    | child_window(title&#x3D;&quot;垂直&quot;, auto_id&#x3D;&quot;NonClientVerticalScrollBar&quot;, control_type&#x3D;&quot;ScrollBar&quot;)</span><br><span class="line">   |    |    |</span><br><span class="line">   |    |    | Button - &#39;上移一行&#39;    (L2321, T435, R2355, B469)</span><br><span class="line">   |    |    | [&#39;Button&#39;, &#39;上移一行&#39;, &#39;上移一行Button&#39;, &#39;Button0&#39;, &#39;Button1&#39;]</span><br><span class="line">   |    |    | child_window(title&#x3D;&quot;上移一行&quot;, auto_id&#x3D;&quot;UpButton&quot;, control_type&#x3D;&quot;Button&quot;)</span><br><span class="line">   |    |    |</span><br><span class="line">   |    |    | Button - &#39;下移一行&#39;    (L2321, T1477, R2355, B1511)</span><br><span class="line">   |    |    | [&#39;下移一行&#39;, &#39;Button2&#39;, &#39;下移一行Button&#39;]</span><br><span class="line">   |    |    | child_window(title&#x3D;&quot;下移一行&quot;, auto_id&#x3D;&quot;DownButton&quot;, control_type&#x3D;&quot;Button&quot;)</span><br></pre></td></tr></table></figure>
+<p>以最高層級的控制項來說明,   </p>
+<p><code>Dialog - &#39;未命名 - 記事本&#39;    (L316, T338, R2368, B1598)</code><br>代表其控制項class為 <strong>Dialog</strong><br>內容名稱為 <strong>‘未命名 - 記事本’</strong><br>左上右下距離分別為 <strong>(L316, T338, R2368, B1598)</strong><br>譬如說這樣操作可以獲得名稱資訊</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">app.Dialog.texts()</span><br></pre></td></tr></table></figure>
+<p><code>[&#39;Dialog&#39;, &#39;未命名 - 記事本&#39;, &#39;未命名 - 記事本Dialog&#39;]</code><br>為可以使用的控制項名稱(官方稱作best_match)<br>譬如我們可以這樣操作  </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">app.Dialog.menu_select(<span class="string">&quot;檔案(&amp;F)-&gt;另存新檔(&amp;A)&quot;</span>)</span><br><span class="line">app[<span class="string">&#x27;Dialog&#x27;</span>].menu_select(<span class="string">&quot;檔案(&amp;F)-&gt;另存新檔(&amp;A)&quot;</span>)</span><br><span class="line">app[<span class="string">&#x27;未命名 - 記事本Dialog&#x27;</span>].menu_select(<span class="string">&quot;檔案(&amp;F)-&gt;另存新檔(&amp;A)&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p><code>child_window(title=&quot;未命名 - 記事本&quot;, control_type=&quot;Window&quot;)</code><br>最後這一行很貼心的附上了可以直接拿來操作的語句  </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">app.child_window(title=<span class="string">&quot;上移一行&quot;</span>, auto_id=<span class="string">&quot;UpButton&quot;</span>, control_type=<span class="string">&quot;Button&quot;</span>).click()</span><br></pre></td></tr></table></figure>
+<h1 id="實戰-設定-gt-VPN"><a href="#實戰-設定-gt-VPN" class="headerlink" title="實戰 - 設定-&gt;VPN"></a>實戰 - 設定-&gt;VPN</h1><blockquote>
+<p>人因懶惰而偉大  </p>
+</blockquote>
+<p>這對於軟體工程師來說是亙古不變的道理  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">環境: windows 11</span><br><span class="line">app: PulseSecure</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pywinauto.application <span class="keyword">import</span> Application</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">os.system(<span class="string">&quot;start ms-settings:network-vpn&quot;</span>)</span><br><span class="line">time.sleep(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">## 連接上instance,此處使用MS UI Automation </span></span><br><span class="line">app = Application(backend=<span class="string">&quot;uia&quot;</span>).connect(title_re=<span class="string">&quot;設定&quot;</span>, class_name=<span class="string">&quot;ApplicationFrameWindow&quot;</span>)</span><br><span class="line"><span class="comment">## 開始用 print_control_identifiers 慢慢找每個按鈕</span></span><br><span class="line"><span class="comment"># app.Dialog[&#x27;WHQVPN 1&#x27;].print_control_identifiers()</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 按下 WHQVPN 連線 按鈕</span></span><br><span class="line">dlg = app.Dialog[<span class="string">u&#x27;WHQVPN 1&#x27;</span>]</span><br><span class="line">dlg.child_window(title=<span class="string">&quot;連線&quot;</span>, control_type=<span class="string">&quot;Button&quot;</span>).click()</span><br><span class="line">time.sleep(<span class="number">1</span>)</span><br><span class="line"><span class="comment">## Proceed 按鈕打勾, 需要特別取得object, 按下一步</span></span><br><span class="line">Checkbox_object = dlg.child_window(title=<span class="string">&quot;Proceed&quot;</span>, control_type=<span class="string">&quot;CheckBox&quot;</span>).wrapper_object()</span><br><span class="line">Checkbox_object.get_toggle_state()</span><br><span class="line">Checkbox_object.toggle()</span><br><span class="line">dlg.child_window(title=<span class="string">&quot;下一步&quot;</span>, control_type=<span class="string">&quot;Button&quot;</span>).click()</span><br><span class="line"></span><br><span class="line"><span class="comment">## 確認是否可以連線</span></span><br><span class="line"><span class="keyword">if</span> <span class="built_in">any</span>(<span class="string">&#x27;無法連線&#x27;</span> <span class="keyword">in</span> s <span class="keyword">for</span> s <span class="keyword">in</span> app.Dialog[<span class="string">&#x27;WHQVPN 1&#x27;</span>].Static3.texts()):</span><br><span class="line">    print(<span class="string">&quot;無法連線(●&#x27;◡&#x27;●)&quot;</span>)</span><br><span class="line">    app.Kill_()</span><br><span class="line"></span><br><span class="line"><span class="comment">## 選擇 Non O365 user , 按下一步</span></span><br><span class="line">dlg.ComboBox.select(<span class="string">&quot;Non O365 User&quot;</span>)</span><br><span class="line">dlg.Button2.click()</span><br><span class="line"></span><br><span class="line"><span class="comment">## 輸入 帳號密碼, 按下一步</span></span><br><span class="line">dlg.Edit.set_edit_text(<span class="string">&quot;員工編號&quot;</span>)</span><br><span class="line">dlg.Edit2.set_edit_text(<span class="string">&quot;員工密碼&quot;</span>)</span><br><span class="line">dlg.child_window(title=<span class="string">&quot;下一步&quot;</span>, control_type=<span class="string">&quot;Button&quot;</span>).click()</span><br><span class="line"></span><br><span class="line"><span class="comment">## 輸入pin碼, 先將其focus, 待使用者輸入6位後就按下一步</span></span><br><span class="line">dlg.Edit.set_focus()</span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">len</span>(dlg.Edit.texts()[<span class="number">0</span>]) == <span class="number">6</span>):</span><br><span class="line">        dlg.child_window(title=<span class="string">&quot;下一步&quot;</span>, control_type=<span class="string">&quot;Button&quot;</span>).click()</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br><span class="line"><span class="comment">## 如果有前次工作階段就繼續</span></span><br><span class="line">time.sleep(<span class="number">1</span>)</span><br><span class="line"><span class="keyword">if</span> dlg.child_window(title=<span class="string">&quot;工作階段選擇&quot;</span>, control_type=<span class="string">&quot;ComboBox&quot;</span>).exists():</span><br><span class="line">    dlg.child_window(title=<span class="string">&quot;下一步&quot;</span>, auto_id=<span class="string">&quot;NextButton&quot;</span>, control_type=<span class="string">&quot;Button&quot;</span>).click()</span><br><span class="line"><span class="comment">## check if 已連線 control exist</span></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    <span class="keyword">if</span> app.Dialog[<span class="string">&#x27;WHQVPN 1&#x27;</span>].child_window(title=<span class="string">&quot;已連線&quot;</span>, control_type=<span class="string">&quot;Text&quot;</span>).exists():</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br><span class="line">app.Kill_()</span><br></pre></td></tr></table></figure>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a target="_blank" rel="noopener" href="https://maliaotw.github.io/2018/07/03/03.%20pywinauto%20%E8%87%AA%E5%8B%95%E6%8E%A7%E5%88%B6windows/">Pywinauto 自動控制windows</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/python/" rel="tag"># python</a>
+              <a href="/tags/pywinauto/" rel="tag"># pywinauto</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/02/day9-i2c-master-byte-ctrl-%E6%A8%A1%E6%93%AC/" rel="prev" title="day9-i2c_master_byte_ctrl 模擬">
+      <i class="fa fa-chevron-left"></i> day9-i2c_master_byte_ctrl 模擬
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/" rel="next" title="在 vscode 中進行 verilog simulation">
+      在 vscode 中進行 verilog simulation <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%92%B0%E5%A2%83%E5%AE%89%E8%A3%9D"><span class="nav-number">1.</span> <span class="nav-text">環境安裝</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B8%AC%E8%A9%A601-%E8%A8%98%E4%BA%8B%E6%9C%AC%E5%8F%A6%E5%AD%98%E6%96%B0%E6%AA%94"><span class="nav-number">2.</span> <span class="nav-text">測試01 - 記事本另存新檔</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E6%9E%90%E8%A6%96%E7%AA%97"><span class="nav-number">3.</span> <span class="nav-text">分析視窗</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AF%A6%E6%88%B0-%E8%A8%AD%E5%AE%9A-gt-VPN"><span class="nav-number">4.</span> <span class="nav-text">實戰 - 設定-&gt;VPN</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reference"><span class="nav-number">5.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zswang</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分類</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">標籤</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zswang</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: '32px',
+  left: 'unset',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+    </div>
+</body>
+</html>
