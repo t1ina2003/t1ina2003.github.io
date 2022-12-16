@@ -20,20 +20,20 @@
     var CONFIG = {"hostname":"t1ina2003.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="BSF &#x3D; Breadth-First-SearchDSF &#x3D; Depth-First-Search 1. problemgiven an array that can be represent as a tree.swap left and right node, and return whole array(tree). for example: Input: root &#x3D; [4,2,7,1,">
+  <meta name="description" content="1. problem level order traversal of its nodes’ values. e.g.Input: root &#x3D; [3,9,20,null,null,15,7]Output: [[3],[9,20],[15,7]] like BFS">
 <meta property="og:type" content="article">
-<meta property="og:title" content="leetcode-226. Invert Binary Tree">
-<meta property="og:url" content="http://t1ina2003.github.io/2022/12/12/leetcode-226-Invert-Binary-Tree/index.html">
+<meta property="og:title" content="leetcode-102. Binary Tree Level Order Traversal">
+<meta property="og:url" content="http://t1ina2003.github.io/2022/12/16/leetcode-102-Binary-Tree-Level-Order-Traversal/index.html">
 <meta property="og:site_name" content="zswang&#39;s blog">
-<meta property="og:description" content="BSF &#x3D; Breadth-First-SearchDSF &#x3D; Depth-First-Search 1. problemgiven an array that can be represent as a tree.swap left and right node, and return whole array(tree). for example: Input: root &#x3D; [4,2,7,1,">
+<meta property="og:description" content="1. problem level order traversal of its nodes’ values. e.g.Input: root &#x3D; [3,9,20,null,null,15,7]Output: [[3],[9,20],[15,7]] like BFS">
 <meta property="og:locale" content="zh_TW">
-<meta property="article:published_time" content="2022-12-12T13:22:19.000Z">
-<meta property="article:modified_time" content="2022-12-15T17:32:11.095Z">
+<meta property="article:published_time" content="2022-12-16T13:02:27.000Z">
+<meta property="article:modified_time" content="2022-12-16T20:40:13.267Z">
 <meta property="article:author" content="zswang">
 <meta property="article:tag" content="leetcode">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://t1ina2003.github.io/2022/12/12/leetcode-226-Invert-Binary-Tree/">
+<link rel="canonical" href="http://t1ina2003.github.io/2022/12/16/leetcode-102-Binary-Tree-Level-Order-Traversal/">
 
 
 <script id="page-configurations">
@@ -46,7 +46,7 @@
   };
 </script>
 
-  <title>leetcode-226. Invert Binary Tree | zswang's blog</title>
+  <title>leetcode-102. Binary Tree Level Order Traversal | zswang's blog</title>
   
 
 
@@ -151,7 +151,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
-    <link itemprop="mainEntityOfPage" href="http://t1ina2003.github.io/2022/12/12/leetcode-226-Invert-Binary-Tree/">
+    <link itemprop="mainEntityOfPage" href="http://t1ina2003.github.io/2022/12/16/leetcode-102-Binary-Tree-Level-Order-Traversal/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -164,7 +164,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          leetcode-226. Invert Binary Tree
+          leetcode-102. Binary Tree Level Order Traversal
         </h1>
 
         <div class="post-meta">
@@ -174,14 +174,14 @@
               </span>
               <span class="post-meta-item-text">發表於</span>
 
-              <time title="創建時間：2022-12-12 21:22:19" itemprop="dateCreated datePublished" datetime="2022-12-12T21:22:19+08:00">2022-12-12</time>
+              <time title="創建時間：2022-12-16 21:02:27" itemprop="dateCreated datePublished" datetime="2022-12-16T21:02:27+08:00">2022-12-16</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新於</span>
-                <time title="修改時間：2022-12-16 01:32:11" itemprop="dateModified" datetime="2022-12-16T01:32:11+08:00">2022-12-16</time>
+                <time title="修改時間：2022-12-17 04:40:13" itemprop="dateModified" datetime="2022-12-17T04:40:13+08:00">2022-12-17</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -204,21 +204,45 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>BSF = Breadth-First-Search<br>DSF = Depth-First-Search</p>
-<h3 id="1-problem"><a href="#1-problem" class="headerlink" title="1. problem"></a>1. problem</h3><p>given an array that can be represent as a tree.<br>swap left and right node, and return whole array(tree). for example:</p>
-<figure class="highlight markdown"><table><tr><td class="code"><pre><span class="line">Input: root = [4,2,7,1,3,6,9]</span><br><span class="line">Output: [4,7,2,9,6,3,1]</span><br></pre></td></tr></table></figure>
+        <h3 id="1-problem"><a href="#1-problem" class="headerlink" title="1. problem"></a>1. problem</h3><ol>
+<li>level order traversal of its nodes’ values. e.g.<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Input: root &#x3D; [3,9,20,null,null,15,7]</span><br><span class="line">Output: [[3],[9,20],[15,7]]</span><br></pre></td></tr></table></figure></li>
+<li>like BFS</li>
+</ol>
 <a id="more"></a>
 
-<h3 id="2-init"><a href="#2-init" class="headerlink" title="2. init"></a>2. init</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Definition for a binary tree node.</span></span><br><span class="line"><span class="comment"># class TreeNode:</span></span><br><span class="line"><span class="comment">#     def __init__(self, val=0, left=None, right=None):</span></span><br><span class="line"><span class="comment">#         self.val = val</span></span><br><span class="line"><span class="comment">#         self.left = left</span></span><br><span class="line"><span class="comment">#         self.right = right</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">invertTree</span>(<span class="params">self, root: Optional[TreeNode]</span>) -&gt; Optional[TreeNode]:</span></span><br></pre></td></tr></table></figure>
-<h3 id="3-thought"><a href="#3-thought" class="headerlink" title="3. thought"></a>3. thought</h3><pre><code>1. if node is empty, return  
-2. assume it&#39;s balance tree,   
-3. if left/right node has child, recursive  
-4. else swap  </code></pre>
-<h3 id="4-trouble"><a href="#4-trouble" class="headerlink" title="4. trouble"></a>4. trouble</h3><ul>
-<li>NoneType’ object has no attribute ‘left’<br>fix it by check if input == []<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> root <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">return</span> root</span><br></pre></td></tr></table></figure>
-<h3 id="5-final-solution"><a href="#5-final-solution" class="headerlink" title="5.final solution"></a>5.final solution</h3><code>Runtime 77 ms Beats 6.10% Memory 14 MB Beats 12.42%</code><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Definition for a binary tree node.</span></span><br><span class="line"><span class="comment"># class TreeNode:</span></span><br><span class="line"><span class="comment">#     def __init__(self, val=0, left=None, right=None):</span></span><br><span class="line"><span class="comment">#         self.val = val</span></span><br><span class="line"><span class="comment">#         self.left = left</span></span><br><span class="line"><span class="comment">#         self.right = right</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">invertTree</span>(<span class="params">self, root: Optional[TreeNode]</span>) -&gt; Optional[TreeNode]:</span></span><br><span class="line">        <span class="keyword">if</span> root <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">return</span> root</span><br><span class="line">        <span class="keyword">if</span> root.left <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">and</span> root.right <span class="keyword">is</span> <span class="literal">None</span>: </span><br><span class="line">            <span class="keyword">return</span> root</span><br><span class="line">        <span class="keyword">else</span>: </span><br><span class="line">            root.left  = self.invertTree(root.left)</span><br><span class="line">            root.right = self.invertTree(root.right)</span><br><span class="line">            temp = root.left</span><br><span class="line">            root.left = root.right</span><br><span class="line">            root.right = temp</span><br><span class="line">            <span class="keyword">return</span> root</span><br></pre></td></tr></table></figure></li>
+<h3 id="2-init"><a href="#2-init" class="headerlink" title="2. init"></a>2. init</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Definition for a binary tree node.</span></span><br><span class="line"><span class="comment"># class TreeNode:</span></span><br><span class="line"><span class="comment">#     def __init__(self, val=0, left=None, right=None):</span></span><br><span class="line"><span class="comment">#         self.val = val</span></span><br><span class="line"><span class="comment">#         self.left = left</span></span><br><span class="line"><span class="comment">#         self.right = right</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">levelOrder</span>(<span class="params">self, root: Optional[TreeNode]</span>) -&gt; List[List[int]]:</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-thought"><a href="#3-thought" class="headerlink" title="3. thought"></a>3. thought</h3><ul>
+<li>iterator</li>
 </ul>
-
+<ol>
+<li>init stack root</li>
+<li>open it and add val into [], result append it.</li>
+<li>add it’s child into stack. left first.</li>
+<li>iterate each item in stack.</li>
+</ol>
+<ul>
+<li>recursive</li>
+</ul>
+<ol>
+<li>global list, clean in init</li>
+<li>add [] in lsit when first time traverse to this depth.</li>
+<li>add val in depth list </li>
+</ol>
+<h3 id="4-trouble"><a href="#4-trouble" class="headerlink" title="4. trouble"></a>4. trouble</h3><ul>
+<li>iterator<ol>
+<li>keep same level node in stack </li>
+<li>one func</li>
+</ol>
+</li>
+<li>recursive<ol>
+<li>fill node’s val in certain position</li>
+<li>two func, one global list</li>
+</ol>
+</li>
+</ul>
+<h3 id="5-final-solution"><a href="#5-final-solution" class="headerlink" title="5.final solution"></a>5.final solution</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">levelOrder</span>(<span class="params">self, root: Optional[TreeNode]</span>) -&gt; List[List[int]]:</span></span><br><span class="line">        <span class="comment"># 1. init stack root</span></span><br><span class="line">        <span class="comment"># 2. open it and add val into [], result append it.</span></span><br><span class="line">        <span class="comment"># 3. add it&#x27;s child into stack. left first.</span></span><br><span class="line">        <span class="comment"># 4. iterate each item in stack.</span></span><br><span class="line">        <span class="keyword">if</span> root <span class="keyword">is</span> <span class="literal">None</span>: <span class="keyword">return</span> []</span><br><span class="line">        result, stack = [], [[root]] <span class="comment"># init stack has root</span></span><br><span class="line">        <span class="keyword">while</span> stack:</span><br><span class="line">            nodes = stack.pop() <span class="comment"># keep pop all item in the stack</span></span><br><span class="line">            currentLevel = [] <span class="comment"># help currnt level into bracket</span></span><br><span class="line">            childs = [] <span class="comment"># load next level child</span></span><br><span class="line">            <span class="keyword">for</span> node <span class="keyword">in</span> nodes:</span><br><span class="line">                currentLevel.append(node.val)</span><br><span class="line">                <span class="keyword">if</span> node.left: childs.append(node.left)</span><br><span class="line">                <span class="keyword">if</span> node.right: childs.append(node.right)</span><br><span class="line">            result.append(currentLevel)</span><br><span class="line">            <span class="keyword">if</span> childs: stack.append(childs)</span><br><span class="line">        <span class="keyword">return</span> result</span><br></pre></td></tr></table></figure>
+<p>recursive way.</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># https://leetcode.com/problems/binary-tree-level-order-traversal/solutions/33468</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span>:</span></span><br><span class="line">    <span class="comment"># 1. init global list with empty []</span></span><br><span class="line">    <span class="comment"># 2. add empty [] in lsit when first time traverse to this depth.</span></span><br><span class="line">    <span class="comment"># 3. add val in list[depth]</span></span><br><span class="line">    _list = []</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">levelOrder</span>(<span class="params">self, root: Optional[TreeNode]</span>) -&gt; List[List[int]]:</span></span><br><span class="line">        self._list = []</span><br><span class="line">        self.preOrder(root, <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span> self._list</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">preOrder</span>(<span class="params">self, root: Optional[TreeNode], depth: <span class="built_in">int</span></span>) -&gt; List[List[int]]:</span> </span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> root: <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(self._list)==depth: self._list.insert(depth,[]) </span><br><span class="line">        self._list[depth].append(root.val)</span><br><span class="line">        <span class="keyword">if</span> root.left: self.preOrder(root.left, depth+<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">if</span> root.right: self.preOrder(root.right, depth+<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># case [3,9,20,null,null,15,7]</span></span><br><span class="line"><span class="comment"># 1. [[]]</span></span><br><span class="line"><span class="comment"># 2. [[3]]</span></span><br><span class="line"><span class="comment"># 3. [[3], []]</span></span><br><span class="line"><span class="comment"># 4. [[3], [9], []]</span></span><br><span class="line"><span class="comment"># 5. [[3], [9,20], []]</span></span><br><span class="line"><span class="comment"># 6. ...</span></span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -236,13 +260,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/12/03/day11-%E5%88%9D%E6%8E%A2python%E4%B8%A6%E8%A1%8C%E3%80%81%E5%B9%B3%E8%A1%8C%E3%80%81%E9%9D%9E%E5%90%8C%E6%AD%A5/" rel="prev" title="day11-初探python並行、平行、非同步">
-      <i class="fa fa-chevron-left"></i> day11-初探python並行、平行、非同步
+    <a href="/2022/12/14/leetcode-230-Kth-Smallest-Element-in-a-BST/" rel="prev" title="leetcode-230. Kth Smallest Element in a BST">
+      <i class="fa fa-chevron-left"></i> leetcode-230. Kth Smallest Element in a BST
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2022/12/12/leetcode-104-Maximum-Depth-of-Binary-Tree/" rel="next" title="leetcode-104. Maximum Depth of Binary Tree">
-      leetcode-104. Maximum Depth of Binary Tree <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
