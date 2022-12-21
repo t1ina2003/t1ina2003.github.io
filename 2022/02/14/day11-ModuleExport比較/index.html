@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"t1ina2003.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="摘自 居玉皓 的 Webpack實戰：入門、進階與調優CommonJS, ES6 Module, AMD, UMD 做簡單的比較">
+<meta property="og:type" content="article">
+<meta property="og:title" content="day11-ModuleExport比較">
+<meta property="og:url" content="http://t1ina2003.github.io/2022/02/14/day11-ModuleExport%E6%AF%94%E8%BC%83/index.html">
+<meta property="og:site_name" content="zswang&#39;s blog">
+<meta property="og:description" content="摘自 居玉皓 的 Webpack實戰：入門、進階與調優CommonJS, ES6 Module, AMD, UMD 做簡單的比較">
+<meta property="og:locale" content="zh_TW">
+<meta property="article:published_time" content="2022-02-14T06:37:12.000Z">
+<meta property="article:modified_time" content="2022-12-20T17:03:08.726Z">
+<meta property="article:author" content="zswang">
+<meta property="article:tag" content="webpack">
+<meta property="article:tag" content="jsavscript">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://t1ina2003.github.io/2022/02/14/day11-ModuleExport%E6%AF%94%E8%BC%83/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>day11-ModuleExport比較 | zswang's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <meta name="google-site-verification" content="ccwy9EYuprx_2qpxqYbyknEnB0zAULlTVbcqa6efO_w" />
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zswang's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://t1ina2003.github.io/2022/02/14/day11-ModuleExport%E6%AF%94%E8%BC%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zswang">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zswang's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          day11-ModuleExport比較
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2022-02-14 14:37:12" itemprop="dateCreated datePublished" datetime="2022-02-14T14:37:12+08:00">2022-02-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2022-12-21 01:03:08" itemprop="dateModified" datetime="2022-12-21T01:03:08+08:00">2022-12-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web/" itemprop="url" rel="index"><span itemprop="name">web</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘自 居玉皓 的 <code>Webpack實戰：入門、進階與調優</code><br>CommonJS, ES6 Module, AMD, UMD 做簡單的比較</p>
+<a id="more"></a>
+
+<h2 id="CommonJS"><a href="#CommonJS" class="headerlink" title="CommonJS"></a>CommonJS</h2><h4 id="模組-每個模組是擁有各自的作用域"><a href="#模組-每個模組是擁有各自的作用域" class="headerlink" title="模組 - 每個模組是擁有各自的作用域"></a>模組 - 每個模組是擁有各自的作用域</h4><p>CommonJS在每個模組都開頭添加了以下程式碼:  </p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> <span class="built_in">module</span> = &#123;</span><br><span class="line">    <span class="built_in">exports</span>: &#123;&#125;,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">var</span> <span class="built_in">exports</span> = <span class="built_in">module</span>.exports;</span><br></pre></td></tr></table></figure>
+<h4 id="導出-利用-export關鍵字"><a href="#導出-利用-export關鍵字" class="headerlink" title="導出 - 利用.export關鍵字"></a>導出 - 利用.export關鍵字</h4><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">    name: <span class="string">&#x27;calculater&#x27;</span>,</span><br><span class="line">    add: <span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> a + b;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="導入-利用require關鍵字"><a href="#導入-利用require關鍵字" class="headerlink" title="導入 - 利用require關鍵字"></a>導入 - 利用require關鍵字</h4><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// calculator.js</span></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">    add: <span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>) </span>&#123;<span class="keyword">return</span> a + b;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// index.js</span></span><br><span class="line"><span class="keyword">const</span> calculator = <span class="built_in">require</span>(<span class="string">&#x27;./calculator.js&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> sum = calculator.add(<span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line"><span class="built_in">console</span>.log(sum); <span class="comment">// 5</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>require有兩種情況：<ul>
+<li>module是第一次被載入。首先執行該模組，然後導出內容。</li>
+<li>module曾被加載入過。模組內的程式碼不會再次執行，而是直接導出上次執行後得到的結果。</li>
+</ul>
+</li>
+</ul>
+<h2 id="ES6-Module"><a href="#ES6-Module" class="headerlink" title="ES6 Module"></a>ES6 Module</h2><h3 id="導出"><a href="#導出" class="headerlink" title="導出"></a>導出</h3><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 命名導出 - 自訂關鍵字 or 使用as </span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> name = <span class="string">&#x27;calculator&#x27;</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> add = <span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>) </span>&#123; <span class="keyword">return</span> a + b; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 默認導出 - default關鍵字</span></span><br><span class="line"><span class="keyword">const</span> name = <span class="string">&#x27;calculator&#x27;</span>;</span><br><span class="line"><span class="keyword">const</span> add = <span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>) </span>&#123; <span class="keyword">return</span> a + b; &#125;;</span><br><span class="line"><span class="keyword">export</span> &#123; name, add &#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="導入"><a href="#導入" class="headerlink" title="導入"></a>導入</h3><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// calculator.js</span></span><br><span class="line"><span class="keyword">const</span> name = <span class="string">&#x27;calculator&#x27;</span>;</span><br><span class="line"><span class="keyword">const</span> add = <span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>) </span>&#123; <span class="keyword">return</span> a + b; &#125;;</span><br><span class="line"><span class="keyword">export</span> &#123; name, add &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ES6 Module中使用import語法導入模組  </span></span><br><span class="line"><span class="keyword">import</span> * <span class="keyword">as</span> calculator <span class="keyword">from</span> <span class="string">&#x27;./calculator.js&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; name, add &#125; <span class="keyword">from</span> <span class="string">&#x27;./calculator.js&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> React, &#123; Component &#125; <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line">add(<span class="number">2</span>, <span class="number">3</span>);</span><br></pre></td></tr></table></figure>
+<p><strong>這裡的React必須寫在大括號前面，而不能順序顛倒，否則會提示語法錯誤。</strong></p>
+<h2 id="CommonJS與ES6-Module的區別"><a href="#CommonJS與ES6-Module的區別" class="headerlink" title="CommonJS與ES6 Module的區別"></a>CommonJS與ES6 Module的區別</h2><h3 id="動態與靜態"><a href="#動態與靜態" class="headerlink" title="動態與靜態"></a>動態與靜態</h3><ul>
+<li><p>CommonJS</p>
+<ul>
+<li>require的模組可以動態指定，可以通過if語句判斷是否加載某個模組</li>
+<li>被執行前，並沒有辦法確定明確的依賴關係，模組的導入、導出發生在代碼的運行階段。</li>
+</ul>
+</li>
+<li><p>ES6 Module</p>
+<ul>
+<li>導入、導出語句都是聲明式的，它不支持導入的路徑是一個表達式，並且導入、導出語句必須位於模組的頂層作用域。因此我們說，ES6 Module是一種靜態的模組結構，在ES6代碼的編譯階段就可以分析出模組的依賴關係。好處是：<ul>
+<li>死代碼檢測和排除。靜態分析工具檢測出哪些模組沒有被調用過。未被調模組永不執行-&gt;死代碼。打包時去掉死代碼，以減小打包資源體積。</li>
+<li>模組變量類型檢查。JavaScript屬於動態類型語言，不會在代碼執行前檢查類型錯誤（比如對一個字符串類型的值進行函數調用）。ES6 Module的靜態模組結構有助於確保模組之間傳遞的值或接口類型是正確的。</li>
+<li>編譯器優化。在CommonJS等動態模組系統中，無論採用哪種方式，本質上導入的都是一個對象，而ES6 Module支持直接導入變數，減少了引用層級，程序效率更高。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>CommonJS是值拷貝/ ES6 Module是reference</p>
+</li>
+</ul>
+<h3 id="非Module文件加載-如下"><a href="#非Module文件加載-如下" class="headerlink" title="非Module文件加載 - 如下:"></a>非Module文件加載 - 如下:</h3><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">&#x27;./jquery.min.js&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="AMD"><a href="#AMD" class="headerlink" title="AMD"></a>AMD</h2><h3 id="Asynchronous-Module-Definition（異步模組定義）"><a href="#Asynchronous-Module-Definition（異步模組定義）" class="headerlink" title="- Asynchronous Module Definition（異步模組定義）"></a>- Asynchronous Module Definition（異步模組定義）</h3><p>它加載模組的方式是異步的。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 導出</span></span><br><span class="line">define(<span class="string">&#x27;getSum&#x27;</span>, [<span class="string">&#x27;calculator&#x27;</span>], <span class="function"><span class="keyword">function</span>(<span class="params">math</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">&#x27;sum: &#x27;</span> + calculator.add(a, b));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// 導入</span></span><br><span class="line"><span class="built_in">require</span>([<span class="string">&#x27;getSum&#x27;</span>], <span class="function"><span class="keyword">function</span>(<span class="params">getSum</span>) </span>&#123;</span><br><span class="line">    getSum(<span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>非阻塞性, 會繼續執行require後面的code, 但是語法冗長, 或許有callback hell.</p>
+<h2 id="UMD"><a href="#UMD" class="headerlink" title="UMD"></a>UMD</h2><h3 id="Universal-Module-Definition，也就是通用模組標準"><a href="#Universal-Module-Definition，也就是通用模組標準" class="headerlink" title="Universal Module Definition，也就是通用模組標準"></a>Universal Module Definition，也就是通用模組標準</h3><p>早在ES6還沒發布前,  算是一種集合體. 支持AMD, CommonJS</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// calculator.js</span></span><br><span class="line">(<span class="function"><span class="keyword">function</span> (<span class="params"><span class="built_in">global</span>, main</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 根據當前環境採取不同的導出方式</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> define === <span class="string">&#x27;function&#x27;</span> &amp;&amp; define.amd) &#123;</span><br><span class="line">        <span class="comment">// AMD</span></span><br><span class="line">        define(...);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="built_in">exports</span> === <span class="string">&#x27;object&#x27;</span>) &#123;</span><br><span class="line">        <span class="comment">// CommonJS</span></span><br><span class="line">        <span class="built_in">module</span>.exports = ...;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 非模組化環境</span></span><br><span class="line">        <span class="built_in">global</span>.add = ...;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;(<span class="built_in">this</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 定義模組主體</span></span><br><span class="line">    <span class="keyword">return</span> &#123;...&#125;</span><br><span class="line">&#125;));</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/webpack/" rel="tag"># webpack</a>
+              <a href="/tags/jsavscript/" rel="tag"># jsavscript</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/12/02/%E5%9C%A8-vscode-%E4%B8%AD%E9%80%B2%E8%A1%8C-verilog-simulation/" rel="prev" title="在 vscode 中進行 verilog simulation">
+      <i class="fa fa-chevron-left"></i> 在 vscode 中進行 verilog simulation
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/14/day12-Synology-Docker-%E5%85%A7%E6%9E%B6%E8%A8%AD-Linebot/" rel="next" title="day12-Synology Docker 內架設 Linebot">
+      day12-Synology Docker 內架設 Linebot <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#CommonJS"><span class="nav-number">1.</span> <span class="nav-text">CommonJS</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A8%A1%E7%B5%84-%E6%AF%8F%E5%80%8B%E6%A8%A1%E7%B5%84%E6%98%AF%E6%93%81%E6%9C%89%E5%90%84%E8%87%AA%E7%9A%84%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="nav-number">1.0.1.</span> <span class="nav-text">模組 - 每個模組是擁有各自的作用域</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B0%8E%E5%87%BA-%E5%88%A9%E7%94%A8-export%E9%97%9C%E9%8D%B5%E5%AD%97"><span class="nav-number">1.0.2.</span> <span class="nav-text">導出 - 利用.export關鍵字</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B0%8E%E5%85%A5-%E5%88%A9%E7%94%A8require%E9%97%9C%E9%8D%B5%E5%AD%97"><span class="nav-number">1.0.3.</span> <span class="nav-text">導入 - 利用require關鍵字</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ES6-Module"><span class="nav-number">2.</span> <span class="nav-text">ES6 Module</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8E%E5%87%BA"><span class="nav-number">2.1.</span> <span class="nav-text">導出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8E%E5%85%A5"><span class="nav-number">2.2.</span> <span class="nav-text">導入</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CommonJS%E8%88%87ES6-Module%E7%9A%84%E5%8D%80%E5%88%A5"><span class="nav-number">3.</span> <span class="nav-text">CommonJS與ES6 Module的區別</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8B%95%E6%85%8B%E8%88%87%E9%9D%9C%E6%85%8B"><span class="nav-number">3.1.</span> <span class="nav-text">動態與靜態</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%9EModule%E6%96%87%E4%BB%B6%E5%8A%A0%E8%BC%89-%E5%A6%82%E4%B8%8B"><span class="nav-number">3.2.</span> <span class="nav-text">非Module文件加載 - 如下:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AMD"><span class="nav-number">4.</span> <span class="nav-text">AMD</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Asynchronous-Module-Definition%EF%BC%88%E7%95%B0%E6%AD%A5%E6%A8%A1%E7%B5%84%E5%AE%9A%E7%BE%A9%EF%BC%89"><span class="nav-number">4.1.</span> <span class="nav-text">- Asynchronous Module Definition（異步模組定義）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UMD"><span class="nav-number">5.</span> <span class="nav-text">UMD</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Universal-Module-Definition%EF%BC%8C%E4%B9%9F%E5%B0%B1%E6%98%AF%E9%80%9A%E7%94%A8%E6%A8%A1%E7%B5%84%E6%A8%99%E6%BA%96"><span class="nav-number">5.1.</span> <span class="nav-text">Universal Module Definition，也就是通用模組標準</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zswang</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分類</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">25</span>
+        <span class="site-state-item-name">標籤</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zswang</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: '32px',
+  left: 'unset',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+    </div>
+</body>
+</html>
